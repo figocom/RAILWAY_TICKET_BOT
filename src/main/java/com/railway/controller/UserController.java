@@ -34,7 +34,7 @@ public class UserController {
         sendMessage.setChatId(chatId);
         if (users == null){
             Database.insertUser(contact.getPhoneNumber(), chatId);
-            sendMessage.setText("Menu");
+            sendMessage.setText("Men");
             sendMessage.setReplyMarkup(ReplyKeyboardButtonUtil.getUsersMenu());
             ComponentContainer.MyBot.sendMsg(sendMessage);
         }
