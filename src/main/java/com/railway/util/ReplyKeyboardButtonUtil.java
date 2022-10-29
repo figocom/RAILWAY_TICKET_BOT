@@ -20,11 +20,11 @@ public class ReplyKeyboardButtonUtil {
         return new KeyboardButton(demo);
     }
 
-    private static KeyboardRow getRow(KeyboardButton...buttons){
+    private static KeyboardRow getRow(KeyboardButton... buttons) {
         return new KeyboardRow(List.of(buttons));
     }
 
-    private static List<KeyboardRow> getRowList(KeyboardRow...rows){
+    private static List<KeyboardRow> getRowList(KeyboardRow... rows) {
         return List.of(rows);
     }
 
@@ -36,8 +36,7 @@ public class ReplyKeyboardButtonUtil {
     }
 
 
-
-    public static ReplyKeyboard getUsersMenu(){
+    public static ReplyKeyboard getUsersMenu() {
 
         return getMarkup(getRowList(
                 getRow(
@@ -63,5 +62,120 @@ public class ReplyKeyboardButtonUtil {
                 )
         ));
 
+    }
+
+    public static ReplyKeyboard getAdminMenu() {
+        return getMarkup(getRowList(
+                getRow(
+                        getButton(ReplyKeyboardButtonConstants.WorkWithReys),
+                        getButton(ReplyKeyboardButtonConstants.WorkWithStations)),
+                getRow(
+                        getButton(ReplyKeyboardButtonConstants.WorkWithDiscount),
+                        getButton(ReplyKeyboardButtonConstants.WorkWithAdmin)
+                ),
+                getRow(
+                        getButton(ReplyKeyboardButtonConstants.WorkWithUsers),
+                        getButton(ReplyKeyboardButtonConstants.GetAllTicketsHistory)
+                )
+        ));
+    }
+
+    public static ReplyKeyboard getStationCrudMenu() {
+
+        return getMarkup(
+                getRowList(
+                        getRow(
+                                getButton(ReplyKeyboardButtonConstants.CreateStation),
+                                getButton(ReplyKeyboardButtonConstants.UpdateStation)
+                        ),
+                        getRow(
+                                getButton(ReplyKeyboardButtonConstants.ReadStations),
+                                getButton(ReplyKeyboardButtonConstants.DeleteStation)
+                        ),
+                        getRow(
+                                getButton(ReplyKeyboardButtonConstants.BackToAdminMenu)
+                        )
+                )
+        );
+    }
+
+    public static ReplyKeyboard getReysCrudMenu() {
+        return getMarkup(
+                getRowList(
+                        getRow(
+                                getButton(ReplyKeyboardButtonConstants.CreateReys),
+                                getButton(ReplyKeyboardButtonConstants.UpdateReys)
+                        ),
+                        getRow(
+                                getButton(ReplyKeyboardButtonConstants.ReadReys),
+                                getButton(ReplyKeyboardButtonConstants.DeleteReys)
+                        ),
+                        getRow(
+                                getButton(ReplyKeyboardButtonConstants.BackToAdminMenu)
+                        )
+                )
+        );
+    }
+
+    public static ReplyKeyboard getDiscountCrudMenu() {
+
+        return getMarkup(
+                getRowList(
+                        getRow(
+                                getButton(ReplyKeyboardButtonConstants.CreateDiscount),
+                                getButton(ReplyKeyboardButtonConstants.UpdateDiscount)
+                        ),
+                        getRow(
+                                getButton(ReplyKeyboardButtonConstants.ReadDiscount),
+                                getButton(ReplyKeyboardButtonConstants.DeleteDiscount)
+                        ),
+                        getRow(
+                                getButton(ReplyKeyboardButtonConstants.BackToAdminMenu)
+                        )
+                )
+        );
+    }
+
+    public static ReplyKeyboard getAdminCrudMenu() {
+        return getMarkup(
+                getRowList(
+                        getRow(
+                                getButton(ReplyKeyboardButtonConstants.AddAdmin),
+                                getButton(ReplyKeyboardButtonConstants.ShowAdmins)
+                        ),
+                        getRow(
+                                getButton(ReplyKeyboardButtonConstants.DeleteAdmin),
+                                getButton(ReplyKeyboardButtonConstants.BackToAdminMenu)
+                        )
+                )
+        );
+
+    }
+
+    public static ReplyKeyboard getWorkWithUsersMenu() {
+
+        return getMarkup(
+                getRowList(
+                        getRow(
+                                getButton(ReplyKeyboardButtonConstants.GetUserList),
+                                getButton(ReplyKeyboardButtonConstants.ShowBlockedUser)
+                        ),
+                        getRow(
+                                getButton(ReplyKeyboardButtonConstants.SendAdvertisement),
+                                getButton(ReplyKeyboardButtonConstants.BackToAdminMenu)
+                        )
+                )
+        );
+    }
+
+    public static ReplyKeyboard getAdminBackMenu() {
+        return getMarkup(
+                getRowList(
+                        getRow(
+                                getButton(ReplyKeyboardButtonConstants.GetBack),
+                                getButton(ReplyKeyboardButtonConstants.BackToAdminMenu)
+                        )
+                )
+        );
     }
 }

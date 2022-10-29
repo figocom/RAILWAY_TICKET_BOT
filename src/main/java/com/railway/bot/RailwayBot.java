@@ -6,6 +6,7 @@ import com.railway.controller.AdminController;
 import com.railway.controller.UserController;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendDocument;
+import org.telegram.telegrambots.meta.api.methods.send.SendLocation;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
@@ -80,6 +81,9 @@ public class RailwayBot extends TelegramLongPollingBot {
                 execute((SendPhoto) obj);
             } else if (obj instanceof SendDocument) {
                 execute((SendDocument) obj);
+            }
+            else if (obj instanceof SendLocation){
+                execute((SendLocation) obj);
             }
 
         } catch (TelegramApiException e) {
