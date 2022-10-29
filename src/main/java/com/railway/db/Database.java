@@ -21,7 +21,7 @@ public class Database {
 
             Statement statement = connection.createStatement();
             String query = """ 
-                    select name from station ; 
+                    select * from station; 
                     """;
 
             ResultSet resultSet = statement.executeQuery(query);
@@ -29,9 +29,12 @@ public class Database {
             List<Station> stationList = new ArrayList<>();
 
             while (resultSet.next()){
+                int id = resultSet.getInt("id");
                 String name = resultSet.getString("name");
-
-                stationList.add(new Station(name));
+                int regionId = resultSet.getInt("region_id");
+                String latitude = resultSet.getString("latitude");
+                String longtitude = resultSet.getString("longitude");
+                stationList.add(new Station(id,name,regionId,latitude,longtitude));
             }
 
             resultSet.close();

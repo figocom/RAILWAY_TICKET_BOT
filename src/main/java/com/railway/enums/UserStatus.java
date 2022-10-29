@@ -1,5 +1,5 @@
 package com.railway.enums;
 
 public enum UserStatus {
-    START,
+    CHOOSE_FROM_STATION, CHOOSE_TO_STATION, CHOOSE_DATE, BUY_TICKET
 }
