@@ -8,6 +8,6 @@ import java.util.List;
 
 public class ComponentContainer {
     public static RailwayBot MyBot=null;
-    public static String BOT_USERNAME = "http://t.me/get_railway_ticket_bot";
-    public static String BOT_TOKEN = "5724738193:AAE3sgfQSZL4bSpW5HA2lTrZaHLhofcQGkI";
+    public static String BOT_USERNAME = "https://t.me/railwaynodirabot";
+    public static String BOT_TOKEN = "5499317706:AAEhlv1src2VqLv7PfEfHlppPIyFp2i8pnI";
 }

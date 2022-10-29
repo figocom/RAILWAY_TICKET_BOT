@@ -13,4 +13,8 @@ public class Station {
     private Integer region_id;
     private String latitude;
     private String longitude;
+
+    public Station(String name) {
+        this.name = name;
+    }
 }

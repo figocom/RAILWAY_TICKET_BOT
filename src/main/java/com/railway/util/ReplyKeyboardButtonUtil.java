@@ -54,4 +54,14 @@ public class ReplyKeyboardButtonUtil {
                 )
         ));
     }
+
+    public static ReplyKeyboard getContactWithAdminMenu() {
+        return getMarkup(getRowList(
+                getRow(
+                        getButton(ReplyKeyboardButtonConstants.sentMessageToAdmin),
+                        getButton(ReplyKeyboardButtonConstants.callToAdmin)
+                )
+        ));
+
+    }
 }
