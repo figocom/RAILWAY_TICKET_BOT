@@ -14,5 +14,6 @@ import java.util.Map;
 public class AdminContainer {
     public static Map<String, StationStatus> adminStationStatusMap = new HashMap<>();
     public static Map<String, AdminStatus> adminWhereMap=new HashMap<>();
+    public static Map<String, StationStatus> adminUpdateStationMap=new HashMap<>();
     public static List<Regions> regions =new ArrayList<>();
 }

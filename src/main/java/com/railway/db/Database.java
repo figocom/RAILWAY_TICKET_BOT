@@ -28,7 +28,7 @@ public class Database {
 
             List<Station> stationList = new ArrayList<>();
 
-            while (resultSet.next()){
+            while (resultSet.next()) {
                 int id = resultSet.getInt("id");
                 String name = resultSet.getString("name");
                 int regionId = resultSet.getInt("region_id");
@@ -51,7 +51,7 @@ public class Database {
 
     }
 
-    public static void insertUser(String phoneNumber, String chatId){
+    public static void insertUser(String phoneNumber, String chatId) {
         try {
 
             Connection connection = DatabaseContainer.getConnection();
@@ -76,14 +76,15 @@ public class Database {
             e.printStackTrace();
         }
     }
-    public static void insertRegion(){
+
+    public static void insertRegion() {
         Connection connection = DatabaseContainer.getConnection();
         String query = """
-                    insert into regions(name)
-                    values('Andijon'),('Buxoro'),('Farg`ona'),('Jizzax'),('Navoi'),('Namangan'),('Toshkent'),('Samarqand'),
-                    ('Sirdaryo'),('Surxandaryo'),('Qashqadaryo'),('Xorazm'),('Qoraqalpog`iston Respublikasi')
-                    ;
-                    """;
+                insert into regions(name)
+                values('Andijon'),('Buxoro'),('Farg`ona'),('Jizzax'),('Navoi'),('Namangan'),('Toshkent'),('Samarqand'),
+                ('Sirdaryo'),('Surxandaryo'),('Qashqadaryo'),('Xorazm'),('Qoraqalpog`iston Respublikasi')
+                ;
+                """;
         try {
             PreparedStatement preparedStatement = Objects.requireNonNull(connection).prepareStatement(query);
             preparedStatement.executeUpdate();
@@ -93,7 +94,8 @@ public class Database {
             e.printStackTrace();
         }
     }
-    public static void insertStation(String name, String region_name,String latitude, String longitude ){
+
+    public static void insertStation(String name, String region_name, String latitude, String longitude) {
         try {
 
             Connection connection = DatabaseContainer.getConnection();
@@ -103,25 +105,25 @@ public class Database {
             assert connection != null;
             PreparedStatement preparedStatement1 = connection.prepareStatement(queryGetRegionId);
             String[] s = region_name.split(" ");
-            preparedStatement1.setString(1,s[0]);
+            preparedStatement1.setString(1, s[0]);
             preparedStatement1.executeQuery();
             ResultSet resultSet = preparedStatement1.getResultSet();
             int id = 0;
-            if (resultSet.next()){
-                id =resultSet.getInt("id");
+            if (resultSet.next()) {
+                id = resultSet.getInt("id");
             }
             preparedStatement1.close();
             resultSet.close();
             String query = """
-                  insert into station(name ,region_id,latitude,longitude)
-                    values(?, ?,?,?);
-                    """;
+                    insert into station(name ,region_id,latitude,longitude)
+                      values(?, ?,?,?);
+                      """;
             PreparedStatement preparedStatement = Objects.requireNonNull(connection).prepareStatement(query);
 
             preparedStatement.setString(1, name);
             preparedStatement.setInt(2, id);
-            preparedStatement.setString(3,latitude);
-            preparedStatement.setString(4,longitude);
+            preparedStatement.setString(3, latitude);
+            preparedStatement.setString(4, longitude);
             preparedStatement.executeUpdate();
             preparedStatement.close();
             connection.close();
@@ -130,26 +132,103 @@ public class Database {
             e.printStackTrace();
         }
     }
-    public static void readRegions(){
-        if (AdminContainer.regions.size()==0){
+
+    public static void readRegions() {
+        if (AdminContainer.regions.size() == 0) {
             try {
 
                 Connection connection = DatabaseContainer.getConnection();
                 Statement statement = Objects.requireNonNull(connection).createStatement();
                 String query = """
-                   select * from  regions order by id;
-                    """;
+                        select * from  regions order by id;
+                         """;
 
                 ResultSet resultSet = statement.executeQuery(query);
 
-                while (resultSet.next()){
+                while (resultSet.next()) {
                     int id = resultSet.getInt(1);
                     String name = resultSet.getString("name");
-                    AdminContainer.regions.add(new Regions(id,name));
+                    AdminContainer.regions.add(new Regions(id, name));
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
             }
+        }
+    }
+
+
+    public static void updateStationName(String newStationName, Integer currentStation) {
+        try {
+
+            Connection connection = DatabaseContainer.getConnection();
+
+            String query = """
+                       UPDATE station SET name = ? WHERE id = ?;
+                       """;
+            assert connection != null;
+
+            PreparedStatement statement = connection.prepareStatement(query);
+            statement.setString(1, newStationName);
+            statement.setInt(2, currentStation);
+            statement.executeUpdate();
+            statement.close();
+            connection.close();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void updateStationLocation(String newStationLatitude, String stationLongitude, Integer currentStation) {
+        try {
+
+            Connection connection = DatabaseContainer.getConnection();
+
+            String query = """
+                       UPDATE station SET latitude = ? WHERE id = ?;
+                       """;
+            String query2 = """
+                       UPDATE station SET longitude = ? WHERE id = ?;
+                       """;
+            assert connection != null;
+
+            PreparedStatement statement = connection.prepareStatement(query);
+            PreparedStatement statement2 = connection.prepareStatement(query2);
+            statement.setString(1, newStationLatitude);
+            statement.setInt(2,currentStation);
+            statement2.setString(1, stationLongitude);
+            statement2.setInt(2, currentStation);
+            statement.executeUpdate();
+            statement2.executeUpdate();
+            statement.close();
+            statement2.close();
+            connection.close();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public static void deleteStation(Integer currentStation) {
+        try {
+
+            Connection connection = DatabaseContainer.getConnection();
+
+            String query = """
+                       UPDATE station SET is_deleted = ? WHERE id = ?;
+                       """;
+            assert connection != null;
+
+            PreparedStatement statement = connection.prepareStatement(query);
+            statement.setBoolean(1, true);
+            statement.setInt(2, currentStation);
+            statement.executeUpdate();
+            statement.close();
+            connection.close();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 }
