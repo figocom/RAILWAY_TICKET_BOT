@@ -4,6 +4,7 @@ import com.railway.container.AdminContainer;
 import com.railway.container.DatabaseContainer;
 import com.railway.db.Database;
 import com.railway.entity.Regions;
+import com.railway.service.UsersService;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 
@@ -82,7 +83,18 @@ public class InlineKeyboardButtonUtil {
         return markup;
     }
 
-    private static List<InlineKeyboardButton> getRow(InlineKeyboardButton... buttons) {
-        return new ArrayList<>(Arrays.asList(buttons));
+    public static ReplyKeyboard getChooseDate() {
+        List<InlineKeyboardButton> firstRow = new ArrayList<>();
+        List<InlineKeyboardButton> secondRow = new ArrayList<>();
+        InlineKeyboardButton button;
+
+        for (int i = 0; i < 10; i++) {
+            button = new InlineKeyboardButton(String.valueOf(i+1));
+            button.setCallbackData(String.valueOf(i));
+            if(i<=4) firstRow.add(button);
+            else secondRow.add(button);
+        }
+
+        return new InlineKeyboardMarkup(Arrays.asList(firstRow, secondRow));
     }
 }

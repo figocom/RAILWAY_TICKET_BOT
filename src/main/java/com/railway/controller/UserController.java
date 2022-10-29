@@ -10,6 +10,7 @@ import com.railway.service.UsersService;
 import com.railway.util.InlineKeyboardButtonUtil;
 import com.railway.util.ReplyKeyboardButtonConstants;
 import com.railway.util.ReplyKeyboardButtonUtil;
+import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
@@ -110,13 +111,13 @@ public class UserController {
         }
 
 
-    public static void handleCallback(User user, Message message, String data) {
+    public static void handleCallback(User user, Message message, String data, String callBackQueryId) {
 
         String chatId = String.valueOf(message.getChatId());
 
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(chatId);
-
+        Boolean success = false;
         UserStatus userStatus = UserContainer.statusUserMap.get(chatId);
 
         if(userStatus.equals(UserStatus.CHOOSE_FROM_STATION) && data.matches("[0-9]+")){
@@ -127,17 +128,36 @@ public class UserController {
             sendMessage.setParseMode(ParseMode.HTML);
             sendMessage.setReplyMarkup(InlineKeyboardButtonUtil.getStations());
             ComponentContainer.MyBot.sendMsg(sendMessage);
+            success = true;
         }else if(userStatus.equals(UserStatus.CHOOSE_TO_STATION) && data.matches("[0-9]+")){
-            UserContainer.statusUserMap.put(chatId, UserStatus.CHOOSE_DATE);
-            UserContainer.toStationId = data;
+            if(UserContainer.fromStationId.equals(data)){
+                AnswerCallbackQuery answerCallbackQuery = new AnswerCallbackQuery();
+                answerCallbackQuery.setCallbackQueryId(callBackQueryId);
+                answerCallbackQuery.setText("Belgilashda xatolik \uD83E\uDD37\uD83C\uDFFB\u200D♂️");
+                answerCallbackQuery.setShowAlert(false);
+                ComponentContainer.MyBot.sendMsg(answerCallbackQuery);
+            }else {
+                UserContainer.statusUserMap.put(chatId, UserStatus.CHOOSE_DATE);
 
-            sendMessage.setText("vaqtni tanlang");
-            sendMessage.setParseMode(ParseMode.HTML);
-            ComponentContainer.MyBot.sendMsg(sendMessage);
+                UserContainer.toStationId = data;
+                StringBuilder caption = new StringBuilder("<b>Ketish vaqtingizni belgilang</b>\n\n");
+                int counter = 1;
+                UsersService.getChooseDate();
+                for (String date : UserContainer.dateList) {
+                    caption.append(counter).append(") ").append(date).append("\n");
+                    counter++;
+                }
+                sendMessage.setText(String.valueOf(caption));
+                sendMessage.setReplyMarkup(InlineKeyboardButtonUtil.getChooseDate());
+                sendMessage.setParseMode(ParseMode.HTML);
+                ComponentContainer.MyBot.sendMsg(sendMessage);
+                success = true;
+            }
         }
-
-        DeleteMessage deleteMessage = new DeleteMessage(chatId, message.getMessageId());
-        ComponentContainer.MyBot.sendMsg(deleteMessage);
+        if(success) {
+            DeleteMessage deleteMessage = new DeleteMessage(chatId, message.getMessageId());
+            ComponentContainer.MyBot.sendMsg(deleteMessage);
+        }
     }
 
 

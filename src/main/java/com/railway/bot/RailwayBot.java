@@ -5,6 +5,7 @@ import com.railway.container.DatabaseContainer;
 import com.railway.controller.AdminController;
 import com.railway.controller.UserController;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
+import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.meta.api.methods.send.SendDocument;
 import org.telegram.telegrambots.meta.api.methods.send.SendLocation;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -56,13 +57,14 @@ public class RailwayBot extends TelegramLongPollingBot {
             Message message = callbackQuery.getMessage();
             User user = callbackQuery.getFrom();
             String data = callbackQuery.getData();
+            String callBackQueryId = callbackQuery.getId();
 
             String chatId = String.valueOf(message.getChatId());
             boolean isAdmin = isAdmin(chatId);
             if (isAdmin) {
                 AdminController.handleCallback(user, message, data);
             } else {
-                UserController.handleCallback(user, message, data);
+                UserController.handleCallback(user, message, data, callBackQueryId);
             }
         }
 
@@ -84,6 +86,8 @@ public class RailwayBot extends TelegramLongPollingBot {
             }
             else if (obj instanceof SendLocation){
                 execute((SendLocation) obj);
+            }else if(obj instanceof AnswerCallbackQuery){
+                execute((AnswerCallbackQuery) obj);
             }
 
         } catch (TelegramApiException e) {
