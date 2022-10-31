@@ -13,5 +13,5 @@ public class Users {
     private boolean isAdmin;
     private String chat_id;
     private Double balance;
-    private boolean isActive;
+
 }

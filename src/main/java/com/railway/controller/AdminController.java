@@ -1,9 +1,12 @@
 package com.railway.controller;
 
 import com.railway.container.AdminContainer;
+import com.railway.container.ComponentContainer;
 import com.railway.db.Database;
+import com.railway.entity.MessageData;
 import com.railway.entity.Reys;
 import com.railway.entity.Station;
+import com.railway.entity.Users;
 import com.railway.enums.ReysStatus;
 import com.railway.enums.StationStatus;
 import com.railway.service.AdminService;
@@ -11,6 +14,8 @@ import com.railway.util.InlineKeyboardButtonUtil;
 import com.railway.util.InlineKeyboardButtonsConstants;
 import com.railway.util.ReplyKeyboardButtonConstants;
 import com.railway.util.ReplyKeyboardButtonUtil;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.Location;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.User;
@@ -52,6 +57,8 @@ public class AdminController {
     static String stationCurrentId;
     static String endTime;
     static Reys updatedReys = new Reys();
+    private static boolean isAdded;
+    private static boolean isDeleted;
 
     public static void handleMessage(User user, Message message) {
         String chatId = String.valueOf(message.getChatId());
@@ -129,17 +136,8 @@ public class AdminController {
                     AdminService.deleteMessageForAdmin(chatId, message.getMessageId() - 1);
                     AdminContainer.adminStationStatusMap.remove(chatId);
                 }
-                if (AdminContainer.adminReysStatusMap.containsKey(chatId)) {
-                    AdminService.deleteMessageForAdmin(chatId, message.getMessageId() - 1);
-                    AdminContainer.adminReysStatusMap.remove(chatId);
-                    AdminContainer.stations.clear();
-                    if (countOfDelStations == 1) {
-                        addedStationsIdForDatabase = addedStationsId;
-                    }
-                    addedStationsId.clear();
-                    countOfAddedStations = 1;
-                    countOfDelStations++;
-                }
+                if (AdminContainer.adminReysStatusMap.containsKey(chatId))
+                    AdminContainer.adminAnswerMap.remove(chatId);
             }
             case ReplyKeyboardButtonConstants.CreateStation -> {
                 if (AdminContainer.adminStationStatusMap.get(chatId) == Admin_Select_Station_For_Update) {
@@ -257,9 +255,24 @@ public class AdminController {
                 AdminContainer.adminReysStatusMap.put(chatId, ReysStatus.adminEnterReysTime);
                 AdminService.sendMessageForAdminWithReplyKeyboard(chatId, textAdmin, ReplyKeyboardButtonUtil.getOnlyBackMenu());
             }
-
+            case ReplyKeyboardButtonConstants.AddAdmin -> {
+                isAdded = true;
+                textAdmin = "Enter number " + "\nExample( +998981234567)";
+                AdminService.sendMessageForAdminWithReplyKeyboard(chatId, textAdmin, ReplyKeyboardButtonUtil.getOnlyBackMenu());
+            }
+            case ReplyKeyboardButtonConstants.DeleteAdmin -> {
+                isDeleted = true;
+                textAdmin = "Enter number " + "\nExample( +998981234567)";
+                AdminService.sendMessageForAdminWithReplyKeyboard(chatId, textAdmin, ReplyKeyboardButtonUtil.getOnlyBackMenu());
+            }
+            case ReplyKeyboardButtonConstants.ShowAdmins -> {
+                List<Users> admins = Database.getAllAdminsList();
+                for (Users admin : admins) {
+                   textAdmin="Phone number: " + admin.getPhone_number();
+                   AdminService.sendMessageForAdmin(chatId,textAdmin);
+                }
+            }
             case default -> {
-
                 if (AdminContainer.adminStationStatusMap.containsKey(chatId)) {
                     StationStatus status;
                     if (AdminContainer.adminUpdateStationMap.containsKey(chatId)) {
@@ -292,7 +305,8 @@ public class AdminController {
                                     InlineKeyboardButtonUtil.getAdminCanselOrConfirm());
                         }
                     }
-                } else if (AdminContainer.adminReysStatusMap.containsKey(chatId)) {
+                }
+                else if (AdminContainer.adminReysStatusMap.containsKey(chatId)) {
                     ReysStatus reysStatus = AdminContainer.adminReysStatusMap.get(chatId);
                     final boolean priceCheck = text.matches("\\${1}[0-9]+\\.*[0-9]*") && text.startsWith("$") && text.substring(1, 2).matches("[0-9]");
                     switch (reysStatus) {
@@ -301,16 +315,15 @@ public class AdminController {
                                 stationEnd = Database.getStationById(Integer.valueOf(addedStationsIdForDatabase.get(addedStationsIdForDatabase.size() - 1)));
                                 stationEndId = String.valueOf(Objects.requireNonNull(stationEnd).getId());
                                 adminReysStartTime = text;
-                                if (adminReysStartTime.charAt(2) != ':'){
-                                    adminReysStartTime="0".concat(adminReysStartTime);
+                                if (adminReysStartTime.charAt(2) != ':') {
+                                    adminReysStartTime = "0".concat(adminReysStartTime);
                                 }
                                 endTime = AdminService.getEndTime(adminReysStartTime, adminReysTrainName, stationStartId, stationEndId);
                                 AdminContainer.adminReysStatusMap.put(chatId, ReysStatus.adminEnterReysPrice);
                                 textAdmin = "Please send me reys price  for 100km! Example($10)";
                                 AdminService.sendMessageForAdminWithReplyKeyboard(chatId, textAdmin,
                                         ReplyKeyboardButtonUtil.getOnlyBackMenu());
-                            }
-                            else {
+                            } else {
                                 textAdmin = "Please send me reys start time! Example(10:00 or 5:53)";
                                 AdminService.sendMessageForAdminWithReplyKeyboard(chatId, textAdmin,
                                         ReplyKeyboardButtonUtil.getOnlyBackMenu());
@@ -341,7 +354,7 @@ public class AdminController {
                         case NewPriceForList -> {
                             if (priceCheck) {
                                 adminReysPrice = text;
-                                Database.uptadeReysPrice(updatedReys,adminReysPrice);
+                                Database.uptadeReysPrice(updatedReys, adminReysPrice);
                                 textAdmin = updatedReys.getName() + " reys price updated to " + adminReysPrice;
                                 AdminService.sendMessageForAdminWithReplyKeyboard
                                         (chatId, textAdmin, ReplyKeyboardButtonUtil.getAdminMenu());
@@ -358,15 +371,14 @@ public class AdminController {
                                 adminReysStartTime = text;
                                 textAdmin = updatedReys.getName() + " reys time updated to " + adminReysStartTime;
                                 AdminContainer.adminReysStatusMap.remove(chatId);
-                                if (adminReysStartTime.charAt(2) != ':'){
-                                   adminReysStartTime="0".concat(adminReysStartTime);
+                                if (adminReysStartTime.charAt(2) != ':') {
+                                    adminReysStartTime = "0".concat(adminReysStartTime);
                                 }
-                                Database.uptadeReysTime(updatedReys,adminReysStartTime);
+                                Database.uptadeReysTime(updatedReys, adminReysStartTime);
                                 AdminService.sendMessageForAdminWithReplyKeyboard(chatId, textAdmin,
                                         ReplyKeyboardButtonUtil.getOnlyBackMenu());
                                 AdminContainer.adminReysStatusMap.remove(chatId);
-                            }
-                            else {
+                            } else {
                                 textAdmin = "Please send  me new  reys start time! Example(10:00 or 5:53)";
                                 AdminService.sendMessageForAdminWithReplyKeyboard(chatId, textAdmin,
                                         ReplyKeyboardButtonUtil.getOnlyBackMenu());
@@ -375,11 +387,63 @@ public class AdminController {
                     }
 
                 }
+                else if (AdminContainer.adminAnswerMap.containsKey(chatId)) {
+                    MessageData messageData = (MessageData) AdminContainer.adminAnswerMap.get(chatId);
+                    String customerChatId = messageData.getCustomerChatId();
+                    Integer messageId = messageData.getMessage().getMessageId();
+                    String messageText = messageData.getMessage().getText();
+
+                    textAdmin = "Admin ning javobi: " + text;
+                    AdminService.sendMessageForAdmin(customerChatId, textAdmin);
+
+
+                    EditMessageText editMessageText = new EditMessageText();
+                    editMessageText.setChatId(chatId);
+                    editMessageText.setText(messageText + "\n\n xabariga javob: \n\n " + text);
+                    editMessageText.setMessageId(messageId);
+                    ComponentContainer.MyBot.sendMsg(editMessageText);
+                    DeleteMessage deleteMessage = new DeleteMessage(chatId, message.getMessageId());
+                    ComponentContainer.MyBot.sendMsg(deleteMessage);
+                    AdminContainer.adminAnswerMap.remove(chatId);
+
+                }
+                else if (isAdded) {
+                    boolean isTrueNum = text.matches("(\\+)998\\d{9}");
+                    Users users = Database.getUserByPhoneNumber(text);
+                    if (!isTrueNum) {
+                        textAdmin = "You entered wrong number re enter number " + "\nExample( +998981234567)";
+                    } else if (users == null) {
+                        textAdmin = "User not found: ";
+                        isAdded = false;
+                    } else if (users.isAdmin()) {
+                        textAdmin = text + " is already admin";
+                    } else {
+                        Database.upgradeUserToAdmin(text);
+                        textAdmin = "Successfully added ";
+                        isAdded = false;
+                    }
+                    AdminService.sendMessageForAdminWithReplyKeyboard(chatId, textAdmin, ReplyKeyboardButtonUtil.getAdminCrudMenu());
+                }
+                else if (isDeleted) {
+                    boolean isTrueNum = text.matches("(\\+)998\\d{9}");
+                    Users users = Database.getUserByPhoneNumber(text);
+                    if (!isTrueNum) {
+                        textAdmin = "You entered wrong number re enter number " + "\nExample( +998981234567)";
+                    } else if (users == null) {
+                        textAdmin = "User not found: ";
+                        isDeleted = false;
+                    } else if (!users.isAdmin()) {
+                        textAdmin = text + " is already user";
+                    } else {
+                        Database.upgradeAdminToUser(text);
+                        textAdmin = "Successfully deleted ";
+                        isDeleted = false;
+                    }
+                    AdminService.sendMessageForAdminWithReplyKeyboard(chatId, textAdmin, ReplyKeyboardButtonUtil.getAdminCrudMenu());
+                }
             }
         }
     }
-
-
 
 
     public static void handleCallback(User user, Message message, String data) {
@@ -498,26 +562,31 @@ public class AdminController {
                 }
             }
         }
-        if (AdminContainer.adminReysStatusMap.containsKey(chatId)) {
+        else if (AdminContainer.adminReysStatusMap.containsKey(chatId)) {
             ReysStatus reysStatus = AdminContainer.adminReysStatusMap.get(chatId);
             switch (reysStatus) {
 
                 case AdminSelectStationForReys -> {
+                    System.out.println(countOfAddedStations);
+
                     if (countOfAddedStations == 1) {
                         stationStart = Database.getStationById(Integer.valueOf(data));
                         stationStartId = data;
                         countOfAllStations = AdminContainer.stations.size();
 
                     }
-                    if (countOfDelStations == 1) {
-                        addedStationsIdForDatabase.addAll(addedStationsId);
-                    }
+
+                    System.out.println(countOfAllStations);
 
                     if (countOfAllStations > countOfAddedStations) {
                         System.out.println(AdminContainer.stations);
                         stationCurrentId = data;
                         boolean canAdded = true;
-                        if (countOfAddedStations >= 2) {
+                        if (countOfAddedStations == 2) {
+                            stationSecondId = data;
+                        }
+                        if (countOfAddedStations > 2) {
+                            System.out.println(countOfAddedStations);
                             canAdded = AdminService.canAddedStationFromReys(stationStartId, stationSecondId, stationCurrentId);
                         }
                         System.out.println(canAdded);
@@ -570,6 +639,12 @@ public class AdminController {
                     AdminService.pleaseChoiceOperationMenu(chatId, ReplyKeyboardButtonUtil.getReysUpdateMEnu(), user);
                 }
             }
+        }
+        else if (data.startsWith(InlineKeyboardButtonsConstants.REPLY_CALL_BACK)) {
+            String customerChatId = data.split("/")[1];
+            AdminContainer.adminAnswerMap.put(chatId, new MessageData(message, customerChatId));
+            textAdmin = "Javobingizni kiriting: ";
+            AdminService.sendMessageForAdmin(chatId, textAdmin);
         }
     }
 

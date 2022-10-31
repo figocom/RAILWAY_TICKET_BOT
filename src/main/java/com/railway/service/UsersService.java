@@ -41,7 +41,7 @@ public class UsersService {
                 users.setAdmin(resultSet.getBoolean("is_admin"));
                 users.setChat_id(resultSet.getString("chat_id"));
                 users.setBalance(resultSet.getDouble("balance"));
-                users.setActive(resultSet.getBoolean("is_active"));
+
             }
 
             resultSet.close();

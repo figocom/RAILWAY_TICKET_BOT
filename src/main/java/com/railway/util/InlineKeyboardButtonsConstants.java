@@ -14,4 +14,6 @@ public interface InlineKeyboardButtonsConstants {
     String Update_Station_Location_Admin = "Update location";
     String Update_Station_Name_Admin_CALL_BACK = "_update_name_";
     String Update_Station_Location_Admin_CALL_BACK = "_update_location_";
+    ///Admin reply un Nodira yozgan bolishi kk
+    String REPLY_CALL_BACK ="nj" ;
 }

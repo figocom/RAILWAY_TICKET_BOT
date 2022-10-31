@@ -19,4 +19,5 @@ public class AdminContainer {
     public static Map<String, ReysStatus> adminReysStatusMap=new HashMap<>();
     public static List<Regions> regions =new ArrayList<>();
     public static List<Station> stations=new ArrayList<>();
+    public static Map<Object, Object> adminAnswerMap=new HashMap<>();
 }
