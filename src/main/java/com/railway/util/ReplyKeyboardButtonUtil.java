@@ -178,4 +178,52 @@ public class ReplyKeyboardButtonUtil {
                 )
         );
     }
+
+    public static ReplyKeyboard getAdminEndMenu() {
+        return getMarkup(
+                getRowList(
+                        getRow(
+                                getButton(ReplyKeyboardButtonConstants.EndProcessesAdmin),
+                                getButton(ReplyKeyboardButtonConstants.BackToAdminMenu)
+                        )
+                )
+        );
+    }
+
+    public static ReplyKeyboard getAdminChoiceTrainMenu() {
+        return getMarkup(
+                getRowList(
+                        getRow(
+                                getButton(ReplyKeyboardButtonConstants.AfrosiyobTrain),
+                                getButton(ReplyKeyboardButtonConstants.SharqTrain)
+                        ),
+                        getRow(
+                                getButton(ReplyKeyboardButtonConstants.BackToAdminMenu)
+                        )
+                )
+        );
+    }
+
+    public static ReplyKeyboard getOnlyBackMenu() {
+        return getMarkup(
+                getRowList(
+                        getRow(
+                                getButton(ReplyKeyboardButtonConstants.BackToAdminMenu)
+                        )
+                )
+        );
+
+    }
+
+    public static ReplyKeyboard getReysUpdateMEnu() {
+        return getMarkup(
+                getRowList(
+                        getRow(
+                                getButton(ReplyKeyboardButtonConstants.UpdateReysPrice),
+                                getButton(ReplyKeyboardButtonConstants.UpdateReysTime)
+                        )
+                )
+        );
+
+    }
 }

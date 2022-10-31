@@ -36,4 +36,9 @@ public interface ReplyKeyboardButtonConstants {
      String contactWithAdmin = "📞 Contact with Admin";
      String sentMessageToAdmin = "📤 Adminga xabar yozish";
      String callToAdmin = "📲 Adminga qo'ngiroq qilish";
+    String EndProcessesAdmin ="End process" ;
+    String AfrosiyobTrain = "Afrosiyob";
+    String SharqTrain = "Sharq";
+    String UpdateReysPrice = "Update reys price";
+    String UpdateReysTime = "Update reys time";
 }

@@ -1,31 +1,17 @@
 package com.railway.util;
 
 import com.railway.container.AdminContainer;
-import com.railway.container.DatabaseContainer;
 import com.railway.db.Database;
-import com.railway.entity.Regions;
-import com.railway.service.AdminService;
-import com.railway.service.UsersService;
+import com.railway.entity.Reys;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 
-import java.sql.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 
-import com.railway.db.Database;
 import com.railway.entity.Station;
-import com.railway.enums.InlineMenuType;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboard;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 
 public class InlineKeyboardButtonUtil {
     public static InlineKeyboardMarkup getDownloadHistoryForAdmin() {
@@ -86,6 +72,35 @@ public class InlineKeyboardButtonUtil {
         return markup;
     }
 
+    public static InlineKeyboardMarkup getStationInCreateReys(List<String> addedStationsId, Integer countOfAddedStations) {
+        List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
+        InlineKeyboardButton button;
+        if (AdminContainer.stations.isEmpty()) {
+            AdminContainer.stations = Database.createStationList();
+        }
+        if (!addedStationsId.isEmpty()) {
+            for (int i = 0; i < AdminContainer.stations.size(); i++) {
+                for (String addedStation : addedStationsId) {
+                    if (AdminContainer.stations.get(i).getId().equals(Integer.parseInt(addedStation))) {
+                        AdminContainer.stations.remove(i);
+                    }
+                }
+            }
+        }
+
+        for (int i = 0; i < AdminContainer.stations.size(); i++) {
+            button = new InlineKeyboardButton(String.valueOf(AdminContainer.stations.get(i).getName()));
+            button.setCallbackData(String.valueOf(AdminContainer.stations.get(i).getId()));
+            keyboard.add(getRow(button));
+        }
+
+
+        InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
+        markup.setKeyboard(keyboard);
+
+        return markup;
+    }
+
 
     public static InlineKeyboardMarkup getUpdateOperationForAdmin() {
         InlineKeyboardButton updateStationName = new InlineKeyboardButton(InlineKeyboardButtonsConstants.Update_Station_Name_Admin);
@@ -109,5 +124,22 @@ public class InlineKeyboardButtonUtil {
         }
 
         return new InlineKeyboardMarkup(Arrays.asList(firstRow, secondRow));
+    }
+
+    public static InlineKeyboardMarkup getAdminReys() {
+
+        List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
+
+        InlineKeyboardButton button;
+        List<Reys> reysList = Database.createReysList();
+        for (int i = 0; i < reysList.size(); i++) {
+            button = new InlineKeyboardButton(String.valueOf(reysList.get(i).getName()));
+            button.setCallbackData(String.valueOf(reysList.get(i).getId()));
+            keyboard.add(getRow(button));
+        }
+        InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
+        markup.setKeyboard(keyboard);
+
+        return markup;
     }
 }
