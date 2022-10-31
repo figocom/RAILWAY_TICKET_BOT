@@ -35,7 +35,15 @@ public class ReplyKeyboardButtonUtil {
         return markup;
     }
 
-
+    public static ReplyKeyboard getFillBalance() {
+        return getMarkup(
+                getRowList(
+                        getRow(
+                                getButton(ReplyKeyboardButtonConstants.GetBack)
+                        )
+                )
+        );
+    }
     public static ReplyKeyboard getUsersMenu() {
 
         return getMarkup(getRowList(

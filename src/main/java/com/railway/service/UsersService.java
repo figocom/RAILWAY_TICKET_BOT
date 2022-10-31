@@ -2,7 +2,12 @@ package com.railway.service;
 
 import com.railway.container.DatabaseContainer;
 import com.railway.container.UserContainer;
+import com.railway.db.Database;
+import com.railway.entity.Reys;
+import com.railway.entity.Station;
 import com.railway.entity.Users;
+import com.railway.enums.TrainType;
+import com.railway.util.ReplyKeyboardButtonConstants;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -14,6 +19,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+
+import static com.railway.service.AdminService.getDistanceFromLatLonInKm;
 
 public class UsersService {
     public static Users getUserByChatId(String chatId) {
@@ -61,4 +68,89 @@ public class UsersService {
         UserContainer.dateList = listOfDates;
     }
 
+    public static List<Reys> getValidReysList(List<Reys> reysList) {
+        List<Reys> reys = new ArrayList<>();
+        double distance1;
+        double distance2;
+        for (Reys reys1 : reysList) {
+            distance1 = getDistanceFromLatLonInKm(
+                    Double.parseDouble(Database.getStationById(reys1.getStart_station_id()).getLatitude()),
+                    Double.parseDouble(Database.getStationById(reys1.getStart_station_id()).getLongitude()),
+                    Double.parseDouble(Database.getStationByRegionAndReysId(UserContainer.fromRegionName, reys1.getId()).getLatitude()),
+                    Double.parseDouble(Database.getStationByRegionAndReysId(UserContainer.fromRegionName, reys1.getId()).getLongitude()));
+            distance2 = getDistanceFromLatLonInKm(
+                    Double.parseDouble(Database.getStationById(reys1.getStart_station_id()).getLatitude()),
+                    Double.parseDouble(Database.getStationById(reys1.getStart_station_id()).getLongitude()),
+                    Double.parseDouble(Database.getStationByRegionAndReysId(UserContainer.toRegionName, reys1.getId()).getLatitude()),
+                    Double.parseDouble(Database.getStationByRegionAndReysId(UserContainer.toRegionName, reys1.getId()).getLongitude()));
+            if(distance1<distance2){
+                reys.add(reys1);
+            }
+        }
+        return reys;
+    }
+
+    public static LocalDateTime getDifTime(Station stationStart, Station stationEnd, TrainType type) {
+        if(stationStart!=stationEnd) {
+            double longitudeStart = Double.parseDouble((stationStart).getLongitude());
+            double latitudeStart = Double.parseDouble((stationStart).getLatitude());
+            double latitudeEnd = Double.parseDouble((stationEnd).getLatitude());
+            double longitudeEnd = Double.parseDouble((stationEnd).getLongitude());
+            double distanceFromLatLonInKm = getDistanceFromLatLonInKm(latitudeStart, longitudeStart, latitudeEnd, longitudeEnd);
+            int hour;
+
+            if (type.equals(TrainType.Afrosiyob)) {
+                hour = (int) Math.round(distanceFromLatLonInKm / 120);
+            } else {
+                hour = (int) Math.round(distanceFromLatLonInKm / 80);
+            }
+
+            return UserContainer.fromStationTime.plusHours(hour);
+        }else{
+            return UserContainer.fromStationTime;
+        }
+    }
+
+    public static String getDif(Station stationStart, Station stationEnd, TrainType type) {
+        if(stationStart!=stationEnd) {
+            double longitudeStart = Double.parseDouble((stationStart).getLongitude());
+            double latitudeStart = Double.parseDouble((stationStart).getLatitude());
+            double latitudeEnd = Double.parseDouble((stationEnd).getLatitude());
+            double longitudeEnd = Double.parseDouble((stationEnd).getLongitude());
+            double distanceFromLatLonInKm = getDistanceFromLatLonInKm(latitudeStart, longitudeStart, latitudeEnd, longitudeEnd);
+            int hour;
+
+            if (type.equals(TrainType.Afrosiyob)) {
+                hour = (int) Math.round(distanceFromLatLonInKm / 120);
+            } else {
+                hour = (int) Math.round(distanceFromLatLonInKm / 80);
+            }
+
+            return String.valueOf(hour);
+        }else{
+            return "00:00";
+        }
+    }
+
+    public static LocalDateTime getDifTimeFirst(LocalDateTime reysStartTime,
+                                         Station stationStart, Station stationEnd, TrainType type) {
+        if(stationStart!=stationEnd) {
+            double longitudeStart = Double.parseDouble((stationStart).getLongitude());
+            double latitudeStart = Double.parseDouble((stationStart).getLatitude());
+            double latitudeEnd = Double.parseDouble((stationEnd).getLatitude());
+            double longitudeEnd = Double.parseDouble((stationEnd).getLongitude());
+            double distanceFromLatLonInKm = getDistanceFromLatLonInKm(latitudeStart, longitudeStart, latitudeEnd, longitudeEnd);
+            int hour;
+
+            if (type.equals(TrainType.Afrosiyob)) {
+                hour = (int) Math.round(distanceFromLatLonInKm / 120);
+            } else {
+                hour = (int) Math.round(distanceFromLatLonInKm / 80);
+            }
+            UserContainer.fromStationTime = reysStartTime.plusHours(hour);
+            return reysStartTime.plusHours(hour);
+        }else{
+            return reysStartTime;
+        }
+    }
 }
