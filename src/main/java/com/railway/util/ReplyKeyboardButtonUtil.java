@@ -78,12 +78,12 @@ public class ReplyKeyboardButtonUtil {
                         getButton(ReplyKeyboardButtonConstants.WorkWithReys),
                         getButton(ReplyKeyboardButtonConstants.WorkWithStations)),
                 getRow(
+                        //todo
                         getButton(ReplyKeyboardButtonConstants.WorkWithDiscount),
                         getButton(ReplyKeyboardButtonConstants.WorkWithAdmin)
                 ),
                 getRow(
-                        getButton(ReplyKeyboardButtonConstants.WorkWithUsers),
-                        getButton(ReplyKeyboardButtonConstants.GetAllTicketsHistory)
+                        getButton(ReplyKeyboardButtonConstants.WorkWithUsers)
                 )
         ));
     }
@@ -116,26 +116,18 @@ public class ReplyKeyboardButtonUtil {
                         ),
                         getRow(
                                 getButton(ReplyKeyboardButtonConstants.ReadReys),
-                                getButton(ReplyKeyboardButtonConstants.DeleteReys)
-                        ),
-                        getRow(
                                 getButton(ReplyKeyboardButtonConstants.BackToAdminMenu)
                         )
                 )
         );
     }
-
+//oylab korish kk
     public static ReplyKeyboard getDiscountCrudMenu() {
-
         return getMarkup(
                 getRowList(
                         getRow(
                                 getButton(ReplyKeyboardButtonConstants.CreateDiscount),
-                                getButton(ReplyKeyboardButtonConstants.UpdateDiscount)
-                        ),
-                        getRow(
-                                getButton(ReplyKeyboardButtonConstants.ReadDiscount),
-                                getButton(ReplyKeyboardButtonConstants.DeleteDiscount)
+                                getButton(ReplyKeyboardButtonConstants.ReadDiscount)
                         ),
                         getRow(
                                 getButton(ReplyKeyboardButtonConstants.BackToAdminMenu)
@@ -159,17 +151,17 @@ public class ReplyKeyboardButtonUtil {
         );
 
     }
-
+//todo
     public static ReplyKeyboard getWorkWithUsersMenu() {
 
         return getMarkup(
                 getRowList(
                         getRow(
                                 getButton(ReplyKeyboardButtonConstants.GetUserList),
-                                getButton(ReplyKeyboardButtonConstants.ShowBlockedUser)
+                                getButton(ReplyKeyboardButtonConstants.SendAdvertisement)
                         ),
                         getRow(
-                                getButton(ReplyKeyboardButtonConstants.SendAdvertisement),
+                                getButton(ReplyKeyboardButtonConstants.GetAllTicketsHistory),
                                 getButton(ReplyKeyboardButtonConstants.BackToAdminMenu)
                         )
                 )
@@ -180,7 +172,6 @@ public class ReplyKeyboardButtonUtil {
         return getMarkup(
                 getRowList(
                         getRow(
-                                getButton(ReplyKeyboardButtonConstants.GetBack),
                                 getButton(ReplyKeyboardButtonConstants.BackToAdminMenu)
                         )
                 )

@@ -3,11 +3,9 @@ package com.railway.db;
 
 import com.railway.container.AdminContainer;
 import com.railway.container.DatabaseContainer;
-import com.railway.entity.Regions;
-import com.railway.entity.Reys;
-import com.railway.entity.Station;
+import com.railway.entity.*;
+import com.railway.enums.WagonType;
 import com.railway.service.AdminService;
-import com.railway.entity.Train;
 import com.railway.enums.TrainType;
 
 import java.sql.*;
@@ -474,9 +472,15 @@ public class Database {
 
 
                 LocalDate localDate = LocalDate.now().plusDays(l);
-                String start_time = localDate.toString().concat(" ").concat(adminReysStartTime).concat(":00");
-                String end_time = localDate.toString().concat(" ").concat(endTime).concat(":00");
+                String start_timeStr = localDate.toString().concat("T").concat(adminReysStartTime);
+                String end_timeStr = localDate.toString().concat("T").concat(endTime);
+                 //todo
+                LocalDateTime end_time= LocalDateTime.parse(end_timeStr);
+                LocalDateTime start_time= LocalDateTime.parse(start_timeStr);
 
+                if (end_time.isBefore(start_time)){
+                    end_time= end_time.plusDays(1);
+                }
                 preparedStatement1.setString(1, adminReysTrainName);
                 preparedStatement1.setInt(2, 120);
                 preparedStatement1.executeUpdate();
@@ -484,8 +488,8 @@ public class Database {
 
                 preparedStatement.setInt(1, Integer.parseInt(stationStartId));
                 preparedStatement.setInt(2, Integer.parseInt(stationEndId));
-                preparedStatement.setString(3, start_time);
-                preparedStatement.setString(4, end_time);
+                preparedStatement.setTimestamp(3, Timestamp.valueOf(start_time));
+                preparedStatement.setTimestamp(4, Timestamp.valueOf(end_time));
                 preparedStatement.setInt(5, id + 1);
                 preparedStatement.setString(6, "0".concat(String.valueOf(id + 1).concat(name)));
                 preparedStatement.executeUpdate();
@@ -499,10 +503,12 @@ public class Database {
 
                 for (int i = 0; i < 6; i++) {
                     System.out.println("insert wagon");
-                    preparedStatement4.setString(1, adminReysTrainName);
-                    preparedStatement4.setInt(2, id + 1);
-                    preparedStatement4.setInt(3, i + 1);
+
+
                     if ((i + 1) % 2 == 0) {
+                        preparedStatement4.setString(1, String.valueOf(WagonType.kupe));
+                        preparedStatement4.setInt(2, id + 1);
+                        preparedStatement4.setInt(3, i + 1);
                         preparedStatement4.setInt(4, 38);
                         preparedStatement4.setDouble(5, Double.parseDouble(adminReysPrice.substring(1)));
                         preparedStatement4.executeUpdate();
@@ -516,6 +522,9 @@ public class Database {
 
                         }
                     } else {
+                        preparedStatement4.setString(1, String.valueOf(WagonType.platskart));
+                        preparedStatement4.setInt(2, id + 1);
+                        preparedStatement4.setInt(3, i + 1);
                         preparedStatement4.setInt(4, 54);
                         preparedStatement4.setDouble(5, Double.parseDouble(adminReysPrice.substring(1)));
                         preparedStatement4.executeUpdate();
@@ -572,8 +581,10 @@ public class Database {
                 String start_time = String.valueOf(resultSet.getTimestamp("start_time"));
                 String end_time = String.valueOf(resultSet.getTimestamp("start_time"));
                 String name = resultSet.getString("name");
-
-                reysList.add(new Reys(id, start_station_id, end_station_id, start_time, end_time, train_id, name));
+                System.out.println(start_time);
+                LocalDateTime startTime = resultSet.getTimestamp("start_time").toLocalDateTime();
+                LocalDateTime endTime = resultSet.getTimestamp("end_time").toLocalDateTime();
+                reysList.add(new Reys(id, start_station_id, end_station_id, startTime,endTime, train_id, name));
             }
 
             resultSet.close();
@@ -604,10 +615,10 @@ public class Database {
                 int start_station_id = resultSet.getInt("start_station_id");
                 int end_station_id = resultSet.getInt("end_station_id");
                 int train_id = resultSet.getInt("train_id");
-                String start_time = String.valueOf(resultSet.getTimestamp("start_time"));
-                String end_time = String.valueOf(resultSet.getTimestamp("start_time"));
+                LocalDateTime startTime = resultSet.getTimestamp("start_time").toLocalDateTime();
+                LocalDateTime endTime = resultSet.getTimestamp("end_time").toLocalDateTime();
                 String name = resultSet.getString("name");
-                reys = new Reys(id, start_station_id, end_station_id, start_time, end_time, train_id, name);
+                reys = new Reys(id, start_station_id, end_station_id, startTime, endTime, train_id, name);
             }
             resultSet.close();
             connection.close();
@@ -630,7 +641,7 @@ public class Database {
             assert connection != null;
 
             PreparedStatement statement = connection.prepareStatement(query);
-            statement.setString(1, adminReysPrice);
+            statement.setDouble(1, Double.parseDouble(adminReysPrice.substring(1)));
             statement.setInt(2, updatedReys.getId());
             statement.executeUpdate();
             statement.close();
@@ -645,25 +656,40 @@ public class Database {
         try {
 
             Connection connection = DatabaseContainer.getConnection();
-            String query1 = """
-                    SELECT id from train where id=?
-                    """;
+           String query1= """
+                   select type from train where id=?
+                   """;
+
             PreparedStatement statement1 = connection.prepareStatement(query1);
             statement1.setInt(1, updatedReys.getTrain_id());
-            ResultSet resultSet = statement1.executeQuery();
-            int id = 0;
-            if (resultSet.next()) {
-                id = resultSet.getInt("id");
+            ResultSet resultSet =statement1.executeQuery();
+            String trainName = null;
+            if (resultSet.next()){
+                trainName=resultSet.getString("type");
             }
+
+            statement1.close();
             String query = """
-                    UPDATE reys SET start_time = ?  and end_time=? where id=?;
+                    UPDATE reys SET start_time = ?::timestamp ,end_time=?::timestamp where train_id=?;
                     """;
-            String start = Objects.requireNonNull(getStationById(updatedReys.getStart_station_id())).getName();
-            String end = Objects.requireNonNull(getStationById(updatedReys.getStart_station_id())).getName();
+            String start = String.valueOf(updatedReys.getStart_time());
+            String start_id = String.valueOf(updatedReys.getStart_station_id());
+            String end_id = String.valueOf(updatedReys.getEnd_station_id());
+            String[] s = start.split("T");
+            String start_timeStr= s[0].concat("T").concat(adminReysStartTime);
+            String endTime = AdminService.getEndTime(adminReysStartTime, Objects.requireNonNull(trainName), start_id, end_id);
+            String end_timeStr= s[0].concat("T").concat(endTime);
+            LocalDateTime start_time= LocalDateTime.parse(start_timeStr);
+            LocalDateTime end_time= LocalDateTime.parse(end_timeStr);
+
+            if (end_time.isBefore(start_time)){
+               end_time= end_time.plusDays(1);
+            }
+            System.out.println(end_time);
             PreparedStatement statement = connection.prepareStatement(query);
-            statement.setString(1, adminReysStartTime);
-            statement.setString(2, AdminService.getEndTime(adminReysStartTime, String.valueOf(id), start, end));
-            statement.setInt(3, updatedReys.getId());
+            statement.setTimestamp(1, Timestamp.valueOf(start_time));
+            statement.setTimestamp(2, Timestamp.valueOf(end_time));
+            statement.setInt(3, updatedReys.getTrain_id());
             statement.executeUpdate();
             statement.close();
             connection.close();

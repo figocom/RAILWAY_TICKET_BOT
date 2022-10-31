@@ -21,7 +21,6 @@ import java.util.Objects;
 
 import static com.railway.enums.AdminStatus.*;
 import static com.railway.enums.ReysStatus.AdminSelectStationForReys;
-import static com.railway.enums.ReysStatus.adminEnterReysTime;
 import static com.railway.enums.StationStatus.*;
 
 
@@ -302,6 +301,9 @@ public class AdminController {
                                 stationEnd = Database.getStationById(Integer.valueOf(addedStationsIdForDatabase.get(addedStationsIdForDatabase.size() - 1)));
                                 stationEndId = String.valueOf(Objects.requireNonNull(stationEnd).getId());
                                 adminReysStartTime = text;
+                                if (adminReysStartTime.charAt(2) != ':'){
+                                    adminReysStartTime="0".concat(adminReysStartTime);
+                                }
                                 endTime = AdminService.getEndTime(adminReysStartTime, adminReysTrainName, stationStartId, stationEndId);
                                 AdminContainer.adminReysStatusMap.put(chatId, ReysStatus.adminEnterReysPrice);
                                 textAdmin = "Please send me reys price  for 100km! Example($10)";
@@ -356,6 +358,9 @@ public class AdminController {
                                 adminReysStartTime = text;
                                 textAdmin = updatedReys.getName() + " reys time updated to " + adminReysStartTime;
                                 AdminContainer.adminReysStatusMap.remove(chatId);
+                                if (adminReysStartTime.charAt(2) != ':'){
+                                   adminReysStartTime="0".concat(adminReysStartTime);
+                                }
                                 Database.uptadeReysTime(updatedReys,adminReysStartTime);
                                 AdminService.sendMessageForAdminWithReplyKeyboard(chatId, textAdmin,
                                         ReplyKeyboardButtonUtil.getOnlyBackMenu());
@@ -561,6 +566,7 @@ public class AdminController {
 
                 case Admin_Choice_Reys_For_Admin -> {
                     updatedReys = Database.getReysById(data);
+                    AdminService.deleteMessageForAdmin(chatId, message.getMessageId());
                     AdminService.pleaseChoiceOperationMenu(chatId, ReplyKeyboardButtonUtil.getReysUpdateMEnu(), user);
                 }
             }

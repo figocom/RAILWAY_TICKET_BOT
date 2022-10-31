@@ -16,6 +16,7 @@ import org.telegram.telegrambots.meta.api.objects.User;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboard;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
@@ -148,20 +149,24 @@ public class AdminService {
         if (hour > 23) {
             hour = hour - 24;
         }
-
-        return String.valueOf(hour).concat(":").concat(split[1]);
+        String hourStr = (String.valueOf(hour)).concat(":").concat(split[1]);
+        if (hour<10){
+             hourStr = "0".concat(hourStr);
+        }
+        return hourStr;
     }
 
     public static String reysReadFromList() {
-        List<Reys> reysList = Database.createReysList();
-        AtomicReference<StringBuilder> allReys = new AtomicReference<>(new StringBuilder());
+        List<Reys> reysList=Database.createReysList();
+
+       StringBuilder allReys = new StringBuilder();
         if (reysList != null) {
             for (int i = 0; i < reysList.size(); i++) {
                 String name = reysList.get(i).getName();
-                allReys.get().append(i + 1).append(".").append(name).append("\n");
+                allReys.append(i + 1).append(".").append(name).append("\n");
             }
         } else {
-            allReys.get().append("Currently there is no available reys");
+            allReys.append("Currently there is no available reys");
         }
         return String.valueOf(allReys);
     }
