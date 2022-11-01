@@ -33,4 +33,15 @@ public class Reys {
         this.train_id=trainId;
         this.name=name;
     }
+
+
+    public Reys(int id, int start_station_id, int end_station_id, LocalDateTime startTime, LocalDateTime endTime, int train_id, String name) {
+        this.id=id;
+        this.start_station_id=start_station_id;
+        this.end_station_id=end_station_id;
+        this.start_time= startTime;
+        this.end_time= endTime;
+        this.train_id=train_id;
+        this.name=name;
+    }
 }

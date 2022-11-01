@@ -83,7 +83,8 @@ public class UserController {
                 ComponentContainer.MyBot.sendMsg(sendMessage);
 
             }
-        }else {
+        }
+        else {
 
             Users users = UsersService.getUserByChatId(chatId);
 

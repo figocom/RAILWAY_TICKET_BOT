@@ -81,9 +81,6 @@ public class ReplyKeyboardButtonUtil {
                         //todo
                         getButton(ReplyKeyboardButtonConstants.WorkWithDiscount),
                         getButton(ReplyKeyboardButtonConstants.WorkWithAdmin)
-                ),
-                getRow(
-                        getButton(ReplyKeyboardButtonConstants.WorkWithUsers)
                 )
         ));
     }

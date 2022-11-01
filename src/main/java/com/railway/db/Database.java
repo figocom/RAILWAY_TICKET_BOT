@@ -620,7 +620,7 @@ public class Database {
                 System.out.println(start_time);
                 LocalDateTime startTime = resultSet.getTimestamp("start_time").toLocalDateTime();
                 LocalDateTime endTime = resultSet.getTimestamp("end_time").toLocalDateTime();
-                reysList.add(new Reys(id, start_station_id, end_station_id, startTime, endTime, train_id, name));
+                reysList.add(new Reys(id, start_station_id, end_station_id, startTime,endTime, train_id, name));
             }
 
             resultSet.close();
@@ -795,7 +795,23 @@ public class Database {
         String query = """
                 select * from users where is_admin=true;
                 """;
-        return getUsersByQuery(users, connection, query);
+
+        try {
+            PreparedStatement statement = Objects.requireNonNull(connection).prepareStatement(query);
+            ResultSet resultSet = statement.executeQuery();
+            while (resultSet.next()) {
+                int id = resultSet.getInt("id");
+                boolean isAdmin = resultSet.getBoolean("is_admin");
+                String chatId = resultSet.getString("chat_id");
+                String phoneNumber = resultSet.getString("phone_number");
+                Double balance = resultSet.getDouble("balance");
+                users.add(new Users(id, phoneNumber, isAdmin, chatId, balance));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return users;
+
     }
 
     public static void addDiscount(LocalDateTime discountStartDate, LocalDateTime discountEndDate, Double discountAmount) {
@@ -830,10 +846,6 @@ public class Database {
         String query = """
                 select * from users;
                 """;
-        return getUsersByQuery(users, connection, query);
-    }
-
-    private static List<Users> getUsersByQuery(List<Users> users, Connection connection, String query) {
         try {
             PreparedStatement statement = Objects.requireNonNull(connection).prepareStatement(query);
             ResultSet resultSet = statement.executeQuery();
@@ -849,7 +861,9 @@ public class Database {
             e.printStackTrace();
         }
         return users;
+
     }
+
 
     public static List<Sale> createSalesList() {
         try {

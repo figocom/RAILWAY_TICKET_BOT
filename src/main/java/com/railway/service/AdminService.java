@@ -188,11 +188,11 @@ public class AdminService {
             return false;
         }
     }
-    public static void sendMessageToUsers( String message) {
+    public static void sendMessageToUsers( String message1) {
            List<Users>users=Database.getAllUser();
         for (Users user : users) {
-            SendMessage sendMessage=new SendMessage(user.getChat_id(),message);
-            ComponentContainer.MyBot.sendMsg(sendMessage);
+            AdminService.sendMessageForAdmin(user.getChat_id(),message1);
+
         }
 
     }
@@ -208,7 +208,7 @@ public class AdminService {
                 String endDate = String.valueOf(salesList.get(i).getEnd_date());
                 String amount = String.valueOf(salesList.get(i).getValue());
                 allReys.append(i + 1).append(".Start date: ").append(startDate).append("\nEnd Date: ").
-                        append(endDate).append("\nAmount: ").append(amount);
+                        append(endDate).append("\nAmount: ").append(amount).append("\n");
             }
         } else {
             allReys.append("Currently there is no available discounts");

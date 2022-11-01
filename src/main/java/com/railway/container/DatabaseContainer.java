@@ -6,9 +6,9 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class DatabaseContainer {
-    static final String user = "ugglrykujkcmkx";
-    static final String password = "c7442184d300c7c7087dec64e9c43de6ffae98a60ab9147a648d51a3f3a223d5";
-    static final String url = "jdbc:postgresql://ec2-54-229-217-195.eu-west-1.compute.amazonaws.com:5432/dblelog7e5b41u";
+    static final String user = "postgres";
+    static final String password = "manguberdi66";
+    static final String url = "jdbc:postgresql://localhost:5432/Railway_bot";
 
     public static   Connection getConnection(){
         try {
