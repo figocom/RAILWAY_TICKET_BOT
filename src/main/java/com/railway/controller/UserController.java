@@ -8,6 +8,7 @@ import com.railway.entity.*;
 import com.railway.enums.CustomerStatus;
 import com.railway.enums.UserStatus;
 import com.railway.files.GenerateImage;
+import com.railway.files.GetTicket;
 import com.railway.service.UsersService;
 import com.railway.util.InlineKeyboardButtonUtil;
 import com.railway.util.InlineKeyboardButtonsConstants;
@@ -15,6 +16,7 @@ import com.railway.util.ReplyKeyboardButtonConstants;
 import com.railway.util.ReplyKeyboardButtonUtil;
 import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
+import org.telegram.telegrambots.meta.api.methods.send.SendDocument;
 import org.telegram.telegrambots.meta.api.methods.send.SendLocation;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
@@ -444,6 +446,19 @@ public class UserController {
         else if(data.equals("_sotibOlaman")){
 
             if(Objects.requireNonNull(Database.getUserByChatId(chatId)).getBalance()<=UserContainer.summa){
+                List<Customer> customers = UserContainer.customerMap.get(chatId);
+                Reys reys = Database.getReysById(UserContainer.currentReysId);
+                for (int i = 0; i < customers.size(); i++) {
+                    GetTicket.ticketPdf("0", "0",
+                            customers.get(i).getFirst_name(),
+                            String.valueOf(reys.getStart_time()), String.valueOf(reys.getStart_station_id()),
+                            String.valueOf(reys.getEnd_station_id()), String.valueOf(reys.getEnd_time()), String.valueOf(reys.getId()), String.valueOf(UserContainer.currentWagonId), 1, String.valueOf(UserContainer.summa));
+                    SendDocument sendDocument = new SendDocument();
+                    sendDocument.setChatId(chatId);
+                    sendDocument.setDocument(new InputFile(new File("src/main/resources/"+customers.get(i).getFirst_name()+".pdf")));
+                    ComponentContainer.MyBot.sendMsg(sendDocument);
+                }
+
                 sendMessage.setText("To'lov muvaffaqqtiyatli amalga oshirildi✅");
                 Database.fillBalance2(chatId, String.valueOf(UserContainer.summa));
             }else{
