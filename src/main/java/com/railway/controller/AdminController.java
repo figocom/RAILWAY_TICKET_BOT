@@ -7,6 +7,7 @@ import com.railway.entity.MessageData;
 import com.railway.entity.Reys;
 import com.railway.entity.Station;
 import com.railway.entity.Users;
+import com.railway.enums.DiscountStatus;
 import com.railway.enums.ReysStatus;
 import com.railway.enums.StationStatus;
 import com.railway.service.AdminService;
@@ -20,7 +21,10 @@ import org.telegram.telegrambots.meta.api.objects.Location;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.User;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -59,6 +63,10 @@ public class AdminController {
     static Reys updatedReys = new Reys();
     private static boolean isAdded;
     private static boolean isDeleted;
+    private static LocalDateTime discountStartDate;
+    private static LocalDateTime discountEndDate;
+    static Double discountAmount;
+    private static String textAdminDiscount;
 
     public static void handleMessage(User user, Message message) {
         String chatId = String.valueOf(message.getChatId());
@@ -138,6 +146,7 @@ public class AdminController {
                 }
                 if (AdminContainer.adminReysStatusMap.containsKey(chatId))
                     AdminContainer.adminAnswerMap.remove(chatId);
+                AdminContainer.adminDiscountmap.remove(chatId);
             }
             case ReplyKeyboardButtonConstants.CreateStation -> {
                 if (AdminContainer.adminStationStatusMap.get(chatId) == Admin_Select_Station_For_Update) {
@@ -268,9 +277,18 @@ public class AdminController {
             case ReplyKeyboardButtonConstants.ShowAdmins -> {
                 List<Users> admins = Database.getAllAdminsList();
                 for (Users admin : admins) {
-                   textAdmin="Phone number: " + admin.getPhone_number();
-                   AdminService.sendMessageForAdmin(chatId,textAdmin);
+                    textAdmin = "Phone number: " + admin.getPhone_number();
+                    AdminService.sendMessageForAdmin(chatId, textAdmin);
                 }
+            }
+            case ReplyKeyboardButtonConstants.CreateDiscount -> {
+                AdminContainer.adminDiscountmap.put(chatId, DiscountStatus.EnterStartDate);
+                textAdmin = "Please enter discount start date: example(2022-11-23 12:00) ";
+                AdminService.sendMessageForAdminWithReplyKeyboard(chatId, textAdmin, ReplyKeyboardButtonUtil.getOnlyBackMenu());
+            }
+            case ReplyKeyboardButtonConstants.ReadDiscount -> {
+                textAdmin = AdminService.reysDiscountFromList();
+                AdminService.sendMessageForAdmin(chatId, textAdmin);
             }
             case default -> {
                 if (AdminContainer.adminStationStatusMap.containsKey(chatId)) {
@@ -440,6 +458,50 @@ public class AdminController {
                         isDeleted = false;
                     }
                     AdminService.sendMessageForAdminWithReplyKeyboard(chatId, textAdmin, ReplyKeyboardButtonUtil.getAdminCrudMenu());
+                }
+                else if (AdminContainer.adminDiscountmap.containsKey(chatId)) {
+                    DiscountStatus discountStatus = AdminContainer.adminDiscountmap.get(chatId);
+                    switch (discountStatus) {
+                        case EnterStartDate -> {
+                            if (AdminService.isTrueDateTime(text)) {
+                                textAdmin = "Please enter discount end date:  example(2022-11-23 12:00) ";
+                                discountStartDate = LocalDateTime.parse(text, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+                                AdminService.sendMessageForAdminWithReplyKeyboard(chatId, textAdmin, ReplyKeyboardButtonUtil.getOnlyBackMenu());
+                                AdminContainer.adminDiscountmap.put(chatId, DiscountStatus.EnterEndDate);
+                            } else {
+                                textAdmin = "You entered wrong format please enter discount start date: example(2022-11-23 12:00) ";
+                                AdminService.sendMessageForAdminWithReplyKeyboard(chatId, textAdmin, ReplyKeyboardButtonUtil.getOnlyBackMenu());
+                            }
+                        }
+                        case EnterEndDate -> {
+                            if (AdminService.isTrueDateTime(text)) {
+                                discountEndDate = LocalDateTime.parse(text, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+                                if (discountEndDate.isBefore(discountStartDate)|| discountEndDate.equals(discountStartDate)) {
+                                    textAdmin = "Unfortunately, the discount start date is later than the discount end date \nPlease enter discount end date: example(2022-11-23 12:00) ";
+                                    AdminService.sendMessageForAdminWithReplyKeyboard(chatId, textAdmin, ReplyKeyboardButtonUtil.getOnlyBackMenu());
+                                } else {
+                                    textAdmin = "Please enter discount amount:  example(5) \nit means 5% ";
+                                    AdminService.sendMessageForAdminWithReplyKeyboard(chatId, textAdmin, ReplyKeyboardButtonUtil.getOnlyBackMenu());
+                                    AdminContainer.adminDiscountmap.put(chatId, DiscountStatus.EnterAmount);
+                                }
+                            } else {
+                                textAdmin = "Please enter discount end date: example(2022-11-23 12:00) ";
+                                AdminService.sendMessageForAdminWithReplyKeyboard(chatId, textAdmin, ReplyKeyboardButtonUtil.getOnlyBackMenu());
+                            }
+                        }
+                        case EnterAmount -> {
+                            if (text.matches("\\d{2}")) {
+                                discountAmount = Double.valueOf(text);
+                                textAdminDiscount = "Start date :" +discountStartDate+"\nEnd Date: "+discountEndDate+ "\nAmount"+discountAmount+" %";
+                                AdminService.sendMessageForAdminWithInlineKeyboard(chatId,textAdminDiscount,InlineKeyboardButtonUtil.getAdminCanselOrConfirm());
+                                AdminContainer.adminDiscountmap.put(chatId,DiscountStatus.ConfirmOrCancel);
+                            }
+                            else {
+                                textAdmin = "You entered wong amount please enter discount amount:  example(5) \nit means 5% ";
+                                AdminService.sendMessageForAdminWithReplyKeyboard(chatId, textAdmin, ReplyKeyboardButtonUtil.getOnlyBackMenu());
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -646,6 +708,27 @@ public class AdminController {
             textAdmin = "Javobingizni kiriting: ";
             AdminService.sendMessageForAdmin(chatId, textAdmin);
         }
+        else if (AdminContainer.adminDiscountmap.containsKey(chatId)){
+            if (AdminContainer.adminDiscountmap.get(chatId)==DiscountStatus.ConfirmOrCancel){
+                if (data.equals(InlineKeyboardButtonsConstants.CONFIRM_Admin_CALL_BACK)) {
+                    AdminService.deleteMessageForAdmin(chatId, message.getMessageId());
+                    textAdmin = "Discount successfully saved!";
+                    AdminService.sendMessageForAdminWithReplyKeyboard
+                            (chatId, textAdmin, ReplyKeyboardButtonUtil.getAdminMenu());
+                    Database.addDiscount(discountStartDate,discountEndDate,discountAmount );
+                    String sendUser="Discount started for all reys!\n".concat(textAdminDiscount);
+                    AdminService.sendMessageToUsers(sendUser);
+                    AdminContainer.adminDiscountmap.remove(chatId);
+                }
+                else {
+                    AdminService.deleteMessageForAdmin(chatId, message.getMessageId());
+                    textAdmin = "Discount did not saved!";
+                    AdminService.sendMessageForAdminWithReplyKeyboard
+                            (chatId, textAdmin, ReplyKeyboardButtonUtil.getAdminMenu());
+                    AdminContainer.adminDiscountmap.remove(chatId);
+                }
+            }
+        }
     }
 
     private static void handleLocation(User user, Message message, Location location, String chatId) {
@@ -677,3 +760,4 @@ public class AdminController {
 
     }
 }
+

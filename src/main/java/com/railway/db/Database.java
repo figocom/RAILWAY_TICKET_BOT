@@ -767,6 +767,45 @@ public class Database {
         String query = """
                 select * from users where is_admin=true;
                 """;
+        return getUsersByQuery(users, connection, query);
+    }
+
+    public static void addDiscount(LocalDateTime discountStartDate, LocalDateTime discountEndDate, Double discountAmount) {
+        try {
+
+            Connection connection = DatabaseContainer.getConnection();
+
+            String query = """
+                    insert into sale(value, start_date, end_date)
+                    values(?, ?,?);
+                    """;
+
+            PreparedStatement preparedStatement = Objects.requireNonNull(connection).prepareStatement(query);
+
+            preparedStatement.setDouble(1, discountAmount);
+            preparedStatement.setTimestamp(2, Timestamp.valueOf(discountStartDate));
+            preparedStatement.setTimestamp(3, Timestamp.valueOf(discountEndDate));
+
+            preparedStatement.executeUpdate();
+
+            preparedStatement.close();
+
+            connection.close();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+    public static List<Users>getAllUser(){
+        List<Users> users = new ArrayList<>();
+        Connection connection = DatabaseContainer.getConnection();
+        String query = """
+                select * from users;
+                """;
+        return getUsersByQuery(users, connection, query);
+    }
+
+    private static List<Users> getUsersByQuery(List<Users> users, Connection connection, String query) {
         try {
             PreparedStatement statement = Objects.requireNonNull(connection).prepareStatement(query);
             ResultSet resultSet = statement.executeQuery();
@@ -782,6 +821,44 @@ public class Database {
             e.printStackTrace();
         }
         return users;
+    }
+
+    public static List<Sale> createSalesList() {
+        try {
+
+
+            Connection connection = DatabaseContainer.getConnection();
+
+            Statement statement = connection.createStatement();
+            String query = """ 
+                    select * from sale ; 
+                    """;
+
+            ResultSet resultSet = statement.executeQuery(query);
+
+            List<Sale> salesList = new ArrayList<>();
+
+            while (resultSet.next()) {
+
+               int id =resultSet.getInt("id");
+                Double amount = resultSet.getDouble("value");
+
+                LocalDateTime startTime = resultSet.getTimestamp("start_date").toLocalDateTime();
+                LocalDateTime endTime = resultSet.getTimestamp("end_date").toLocalDateTime();
+                salesList.add(new Sale(id, amount,startTime, endTime));
+            }
+
+            resultSet.close();
+            statement.close();
+            connection.close();
+
+            return salesList;
+
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }
 

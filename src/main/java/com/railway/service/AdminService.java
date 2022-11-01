@@ -4,18 +4,24 @@ import com.railway.container.AdminContainer;
 import com.railway.container.ComponentContainer;
 import com.railway.db.Database;
 import com.railway.entity.Reys;
+import com.railway.entity.Sale;
 import com.railway.entity.Station;
+import com.railway.entity.Users;
 import com.railway.enums.AdminStatus;
 import com.railway.util.InlineKeyboardButtonUtil;
 import com.railway.util.ReplyKeyboardButtonConstants;
 import com.railway.util.ReplyKeyboardButtonUtil;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
+import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.User;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboard;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -150,16 +156,16 @@ public class AdminService {
             hour = hour - 24;
         }
         String hourStr = (String.valueOf(hour)).concat(":").concat(split[1]);
-        if (hour<10){
-             hourStr = "0".concat(hourStr);
+        if (hour < 10) {
+            hourStr = "0".concat(hourStr);
         }
         return hourStr;
     }
 
     public static String reysReadFromList() {
-        List<Reys> reysList=Database.createReysList();
+        List<Reys> reysList = Database.createReysList();
 
-       StringBuilder allReys = new StringBuilder();
+        StringBuilder allReys = new StringBuilder();
         if (reysList != null) {
             for (int i = 0; i < reysList.size(); i++) {
                 String name = reysList.get(i).getName();
@@ -170,4 +176,46 @@ public class AdminService {
         }
         return String.valueOf(allReys);
     }
+
+    public static boolean isTrueDateTime(String dateTime) {
+        String pattern = "yyyy-MM-dd HH:mm";
+        try {
+            LocalDateTime.parse(dateTime, DateTimeFormatter.ofPattern(pattern));
+            System.out.println("Correct");
+            return true;
+        } catch (Exception e) {
+            System.out.println("Not Correct");
+            return false;
+        }
+    }
+    public static void sendMessageToUsers( String message) {
+           List<Users>users=Database.getAllUser();
+        for (Users user : users) {
+            SendMessage sendMessage=new SendMessage(user.getChat_id(),message);
+            ComponentContainer.MyBot.sendMsg(sendMessage);
+        }
+
+    }
+
+
+    public static String reysDiscountFromList() {
+        List<Sale> salesList = Database.createSalesList();
+
+        StringBuilder allReys = new StringBuilder();
+        if (salesList != null) {
+            for (int i = 0; i < salesList.size(); i++) {
+                String startDate = String.valueOf(salesList.get(i).getStart_date());
+                String endDate = String.valueOf(salesList.get(i).getEnd_date());
+                String amount = String.valueOf(salesList.get(i).getValue());
+                allReys.append(i + 1).append(".Start date: ").append(startDate).append("\nEnd Date: ").
+                        append(endDate).append("\nAmount: ").append(amount);
+            }
+        } else {
+            allReys.append("Currently there is no available discounts");
+        }
+        return String.valueOf(allReys);
+
+    }
 }
+
+

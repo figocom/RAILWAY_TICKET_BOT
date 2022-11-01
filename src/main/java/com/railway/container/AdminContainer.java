@@ -3,8 +3,10 @@ package com.railway.container;
 import com.railway.entity.Regions;
 import com.railway.entity.Station;
 import com.railway.enums.AdminStatus;
+import com.railway.enums.DiscountStatus;
 import com.railway.enums.ReysStatus;
 import com.railway.enums.StationStatus;
+
 
 
 import java.util.ArrayList;
@@ -20,4 +22,5 @@ public class AdminContainer {
     public static List<Regions> regions =new ArrayList<>();
     public static List<Station> stations=new ArrayList<>();
     public static Map<Object, Object> adminAnswerMap=new HashMap<>();
+    public static Map<String, DiscountStatus> adminDiscountmap=new HashMap<>();
 }
