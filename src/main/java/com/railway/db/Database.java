@@ -6,6 +6,7 @@ import com.railway.container.DatabaseContainer;
 import com.railway.entity.*;
 import com.railway.enums.WagonType;
 import com.railway.service.AdminService;
+import com.railway.entity.Train;
 import com.railway.enums.TrainType;
 
 import java.sql.*;
@@ -35,13 +36,13 @@ public class Database {
 
             List<Station> stationList = new ArrayList<>();
 
-            while (resultSet.next()) {
+            while (resultSet.next()){
                 int id = resultSet.getInt("id");
                 String name = resultSet.getString("name");
                 int regionId = resultSet.getInt("region_id");
                 String latitude = resultSet.getString("latitude");
                 String longtitude = resultSet.getString("longitude");
-                stationList.add(new Station(id, name, regionId, latitude, longtitude));
+                stationList.add(new Station(id,name,regionId,latitude,longtitude));
             }
 
             resultSet.close();
@@ -58,7 +59,7 @@ public class Database {
 
     }
 
-    public static void insertUser(String phoneNumber, String chatId) {
+    public static void insertUser(String phoneNumber, String chatId){
         try {
             if (!phoneNumber.startsWith("+")){
                 phoneNumber="+"+phoneNumber;
@@ -86,8 +87,7 @@ public class Database {
             e.printStackTrace();
         }
     }
-
-    public static void insertRegion() {
+    public static void insertRegion(){
         Connection connection = DatabaseContainer.getConnection();
         String query = """
                 insert into regions(name)
@@ -135,6 +135,36 @@ public class Database {
         }
         return false;
     }
+    public static boolean fillBalance2(String chatId, String amount) {
+        if (amount.length() <= 8 && amount.trim().matches("[0-9]+")) {
+            Integer amount1 = Integer.valueOf(amount);
+            try {
+                String showBalance = "";
+                Connection connection = DatabaseContainer.getConnection();
+                Statement statement = connection.createStatement();
+
+                String query = """
+                        update users set balance = balance - ?
+                        where chat_id = ?;
+                        """;
+
+
+                PreparedStatement preparedStatement = connection.prepareStatement(query);
+                preparedStatement.setInt(1, amount1);
+                preparedStatement.setString(2, chatId);
+
+
+                preparedStatement.executeUpdate();
+
+                connection.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+
+            return true;
+        }
+        return false;
+    }
 
     public static void insertStation(String name, String region_name, String latitude, String longitude) {
         try {
@@ -146,25 +176,25 @@ public class Database {
             assert connection != null;
             PreparedStatement preparedStatement1 = connection.prepareStatement(queryGetRegionId);
             String[] s = region_name.split(" ");
-            preparedStatement1.setString(1, s[0]);
+            preparedStatement1.setString(1,s[0]);
             preparedStatement1.executeQuery();
             ResultSet resultSet = preparedStatement1.getResultSet();
             int id = 0;
-            if (resultSet.next()) {
-                id = resultSet.getInt("id");
+            if (resultSet.next()){
+                id =resultSet.getInt("id");
             }
             preparedStatement1.close();
             resultSet.close();
             String query = """
-                    insert into station(name ,region_id,latitude,longitude)
-                      values(?, ?,?,?);
-                      """;
+                  insert into station(name ,region_id,latitude,longitude)
+                    values(?, ?,?,?);
+                    """;
             PreparedStatement preparedStatement = Objects.requireNonNull(connection).prepareStatement(query);
 
             preparedStatement.setString(1, name);
             preparedStatement.setInt(2, id);
-            preparedStatement.setString(3, latitude);
-            preparedStatement.setString(4, longitude);
+            preparedStatement.setString(3,latitude);
+            preparedStatement.setString(4,longitude);
             preparedStatement.executeUpdate();
             preparedStatement.close();
             connection.close();
@@ -173,23 +203,22 @@ public class Database {
             e.printStackTrace();
         }
     }
-
-    public static void readRegions() {
-        if (AdminContainer.regions.size() == 0) {
+    public static void readRegions(){
+        if (AdminContainer.regions.size()==0){
             try {
 
                 Connection connection = DatabaseContainer.getConnection();
                 Statement statement = Objects.requireNonNull(connection).createStatement();
                 String query = """
-                        select * from  regions order by id;
-                         """;
+                   select * from  regions order by id;
+                    """;
 
                 ResultSet resultSet = statement.executeQuery(query);
 
-                while (resultSet.next()) {
+                while (resultSet.next()){
                     int id = resultSet.getInt(1);
                     String name = resultSet.getString("name");
-                    AdminContainer.regions.add(new Regions(id, name));
+                    AdminContainer.regions.add(new Regions(id,name));
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
@@ -215,20 +244,20 @@ public class Database {
                     "from (select * from\n" +
                     "    reys inner join station_reys sr on reys.id = sr.reys_id\n" +
                     "         inner join (select s.id from station s\n" +
-                    "                                          inner join (select regions.id from regions where name = '" + fromRegion + "' limit 1) regions\n" +
+                    "                                          inner join (select regions.id from regions where name = '"+fromRegion+"' limit 1) regions\n" +
                     "                                                     on s.region_id = regions.id and not s.is_deleted) s on sr.station_id = s.id\n" +
                     "     ) fromReys inner join (select reys.id from\n" +
                     "    reys inner join station_reys sr on reys.id = sr.reys_id\n" +
                     "         inner join (select s.id from station s\n" +
-                    "                                          inner join (select regions.id from regions where name = '" + toRegion + "' limit 1) regions\n" +
+                    "                                          inner join (select regions.id from regions where name = '"+toRegion+"' limit 1) regions\n" +
                     "                                                     on s.region_id = regions.id and not s.is_deleted) s on sr.station_id = s.id\n" +
-                    ") toReys on fromReys.reys_id = toReys.id where start_time::date='" + validDate + "'::date;";
+                    ") toReys on fromReys.reys_id = toReys.id where start_time::date='"+validDate+"'::date;";
 
             ResultSet resultSet = statement.executeQuery(query);
 
             List<Reys> reysList = new ArrayList<>();
 
-            while (resultSet.next()) {
+            while (resultSet.next()){
                 int id = resultSet.getInt("id");
                 int startStationId = resultSet.getInt("start_station_id");
                 int endStationId = resultSet.getInt("end_station_id");
@@ -236,7 +265,7 @@ public class Database {
                 int trainId = resultSet.getInt("train_id");
                 LocalDateTime startTime = resultSet.getTimestamp("start_time").toLocalDateTime();
                 LocalDateTime endTime = resultSet.getTimestamp("end_time").toLocalDateTime();
-                reysList.add(new Reys(id, name, startStationId, endStationId, trainId, startTime, endTime));
+                reysList.add(new Reys(id,name,startStationId,endStationId,trainId, startTime, endTime));
             }
             resultSet.close();
             connection.close();
@@ -279,11 +308,11 @@ public class Database {
             Connection connection = DatabaseContainer.getConnection();
 
             Statement statement = connection.createStatement();
-            String query = "select * from train where id =" + trainId + ";";
+            String query = "select * from train where id ="+trainId+";";
 
             ResultSet resultSet = statement.executeQuery(query);
             Train train = new Train();
-            while (resultSet.next()) {
+            while (resultSet.next()){
                 int id = resultSet.getInt("id");
                 TrainType type = TrainType.valueOf(resultSet.getString("type"));
                 int speed = resultSet.getInt("speed");
@@ -308,14 +337,14 @@ public class Database {
             Connection connection = DatabaseContainer.getConnection();
             Statement statement = connection.createStatement();
 
-            String query = "select balance from users  where chat_id = '" + chatId + "';";
+            String query = "select balance from users  where chat_id = '"+chatId+"';";
 //            PreparedStatement preparedStatement = connection.prepareStatement(query);
 //            preparedStatement.setString(1, chatId);
             ResultSet rs = statement.executeQuery(query);
 
             while (rs.next()) {
                 Double balance = rs.getDouble("balance");
-                answer = answer + balance;
+                answer = answer + balance ;
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -440,7 +469,6 @@ public class Database {
 
             if (resultSet.next()) {
                 id = resultSet.getInt("id");
-                System.out.println(id);
             }
             resultSet.close();
             preparedStatement12.close();
@@ -626,7 +654,7 @@ public class Database {
                 LocalDateTime startTime = resultSet.getTimestamp("start_time").toLocalDateTime();
                 LocalDateTime endTime = resultSet.getTimestamp("end_time").toLocalDateTime();
                 String name = resultSet.getString("name");
-                reys = new Reys(id, start_station_id, end_station_id, startTime, endTime, train_id, name);
+                reys = new Reys(id,name, start_station_id, end_station_id, train_id, startTime, endTime);
             }
             resultSet.close();
             connection.close();
@@ -649,7 +677,7 @@ public class Database {
             assert connection != null;
 
             PreparedStatement statement = connection.prepareStatement(query);
-            statement.setDouble(1, Double.parseDouble(adminReysPrice.substring(1)));
+            statement.setString(1, adminReysPrice);
             statement.setInt(2, updatedReys.getId());
             statement.executeUpdate();
             statement.close();
@@ -665,7 +693,7 @@ public class Database {
 
             Connection connection = DatabaseContainer.getConnection();
             String query1 = """
-                    select type from train where id=?
+                    SELECT id from train where id=?
                     """;
 
             PreparedStatement statement1 = connection.prepareStatement(query1);
@@ -678,7 +706,7 @@ public class Database {
 
             statement1.close();
             String query = """
-                    UPDATE reys SET start_time = ?::timestamp ,end_time=?::timestamp where train_id=?;
+                    UPDATE reys SET start_time = ?  and end_time=? where id=?;
                     """;
             String start = String.valueOf(updatedReys.getStart_time());
             String start_id = String.valueOf(updatedReys.getStart_station_id());
@@ -859,6 +887,224 @@ public class Database {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public static List<Wagon> getWagonListByTrainId(Integer train_id) {
+            try {
+                Connection connection = DatabaseContainer.getConnection();
+
+                Statement statement = connection.createStatement();
+                String query = "select * from wagon where train_id="+train_id+" order by number;";
+
+                ResultSet resultSet = statement.executeQuery(query);
+
+                List<Wagon> wagonList = new ArrayList<>();
+
+                while (resultSet.next()){
+                    int id = resultSet.getInt("id");
+                    WagonType type = WagonType.valueOf(resultSet.getString("type"));
+                    int trainId = resultSet.getInt("train_id");
+                    int number = resultSet.getInt("number");
+                    int capacity = resultSet.getInt("capacity");
+                    double price = resultSet.getDouble("price");
+                    wagonList.add(new Wagon(id,type,trainId,number,capacity,price));
+                }
+
+                resultSet.close();
+                connection.close();
+
+                return wagonList;
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+
+            return null;
+
+        }
+
+    public static List<Place> getFreePlacesByWagonId(int wagonId) {
+        try {
+            Connection connection = DatabaseContainer.getConnection();
+
+            Statement statement = connection.createStatement();
+            String query = "select * from place where wagon_id="+wagonId+" and is_active=true;";
+
+            ResultSet resultSet = statement.executeQuery(query);
+
+            List<Place> placesList = new ArrayList<>();
+
+            while (resultSet.next()) {
+                int id = resultSet.getInt("id");
+                int number = resultSet.getInt("number");
+                int wagon_id = resultSet.getInt("wagon_id");
+                boolean is_active = resultSet.getBoolean("is_active");
+                boolean is_it_on_top = resultSet.getBoolean("is_it_on_top");
+
+                placesList.add(new Place(id,  number, wagon_id, is_active, is_it_on_top));
+            }
+
+            resultSet.close();
+            statement.close();
+            connection.close();
+
+            return placesList;
+
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    public static int getCountFreePlacesByWagonId(Integer wagonId) {
+        try {
+            Connection connection = DatabaseContainer.getConnection();
+
+            Statement statement = connection.createStatement();
+            String query = "select count(*) from place where wagon_id="+wagonId+" and is_active=true;";
+
+            ResultSet resultSet = statement.executeQuery(query);
+
+            int count = 0;
+
+            while (resultSet.next()) {
+                count = resultSet.getInt("count");
+            }
+
+            resultSet.close();
+            statement.close();
+            connection.close();
+
+            return count;
+
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return 0;
+
+    }
+
+    public static List<Place> getPlacesByWagonId(Integer wagonId) {
+        try {
+            Connection connection = DatabaseContainer.getConnection();
+
+            Statement statement = connection.createStatement();
+            String query = "select * from place where wagon_id="+wagonId+" order by number;";
+
+            ResultSet resultSet = statement.executeQuery(query);
+
+            List<Place> placesList = new ArrayList<>();
+
+            while (resultSet.next()) {
+                int id = resultSet.getInt("id");
+                int number = resultSet.getInt("number");
+                int wagon_id = resultSet.getInt("wagon_id");
+                boolean is_active = resultSet.getBoolean("is_active");
+                boolean is_it_on_top = resultSet.getBoolean("is_it_on_top");
+
+                placesList.add(new Place(id,  number, wagon_id, is_active, is_it_on_top));
+            }
+
+            resultSet.close();
+            statement.close();
+            connection.close();
+
+            return placesList;
+
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    public static Place getPlaceById(String placeId) {
+        try {
+            Connection connection = DatabaseContainer.getConnection();
+
+            Statement statement = connection.createStatement();
+            String query = "select * from place where id="+placeId+";";
+
+            ResultSet resultSet = statement.executeQuery(query);
+            Place place = new Place();
+            while (resultSet.next()) {
+                place.setId(resultSet.getInt("id"));
+                place.setNumber(resultSet.getInt("number"));
+                place.setWagon_id(resultSet.getInt("wagon_id"));
+                place.set_active(resultSet.getBoolean("is_active"));
+                place.set_in_on_top(resultSet.getBoolean("is_it_on_top"));
+            }
+
+            resultSet.close();
+            statement.close();
+            connection.close();
+
+            return place;
+
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    public static Wagon getWagonById(int wagonId) {
+        try {
+            Connection connection = DatabaseContainer.getConnection();
+
+            Statement statement = connection.createStatement();
+            String query = "select * from wagon where id="+wagonId+";";
+
+            ResultSet resultSet = statement.executeQuery(query);
+            Wagon wagon = new Wagon();
+            while (resultSet.next()) {
+                wagon.setId(resultSet.getInt("id"));
+                wagon.setNumber(resultSet.getInt("number"));
+                wagon.setType(WagonType.valueOf(resultSet.getString("type")));
+                wagon.setPrice(resultSet.getDouble("price"));
+            }
+
+            resultSet.close();
+            statement.close();
+            connection.close();
+
+            return wagon;
+
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    public static Users getUserByChatId(String chatId) {
+        try{
+            Connection connection = DatabaseContainer.getConnection();
+
+            Statement statement = connection.createStatement();
+            String query = "select * from users where chat_id='"+chatId+"';";
+
+            ResultSet resultSet = statement.executeQuery(query);
+            Users user = new Users();
+        while (resultSet.next()){
+            user.setId(resultSet.getInt("id"));
+            user.setBalance(resultSet.getDouble("balance"));
+        }
+
+        resultSet.close();
+        connection.close();
+
+            return user;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+            return null;
     }
 }
 

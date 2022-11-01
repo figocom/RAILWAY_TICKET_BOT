@@ -1,0 +1,5 @@
+package com.railway.enums;
+
+public enum CustomerStatus {
+    ENTER_MIDDLE_NAME, ENTER_SURE_NAME, ENTER_BIRTH_DATE, ENTER_GENDER, ENTER_DOCUMENT_TYPE, ENTER_SERIA_NUMBER, ENTER_NAME
+}

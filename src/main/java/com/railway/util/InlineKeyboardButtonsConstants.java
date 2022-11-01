@@ -14,6 +14,15 @@ public interface InlineKeyboardButtonsConstants {
     String Update_Station_Location_Admin = "Update location";
     String Update_Station_Name_Admin_CALL_BACK = "_update_name_";
     String Update_Station_Location_Admin_CALL_BACK = "_update_location_";
+    String PREV = "⬅️";
+    String PREV_CALL_BACK = "_prev";
+    String WAGON_INFO = "_infoWagon";
+    String NEXT = "➡️";
+    String NEXT_CALL_BACK = "_next";
+    String BACK_TO_REYS = "\uD83D\uDD19Back";
+    String BACK_REYS_CALL_BACK = "_backToreys";
+    String BUY_PLACE = "\uD83D\uDCB5 Buy";
+    String BUY_PLACE_CALL_BACK = "_buyPlace";
     ///Admin reply un Nodira yozgan bolishi kk
     String REPLY_CALL_BACK ="nj" ;
 }

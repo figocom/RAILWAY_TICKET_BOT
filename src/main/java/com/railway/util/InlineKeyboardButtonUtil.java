@@ -1,7 +1,9 @@
 package com.railway.util;
 
 import com.railway.container.AdminContainer;
+import com.railway.container.UserContainer;
 import com.railway.db.Database;
+import com.railway.entity.Place;
 import com.railway.entity.Reys;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
@@ -44,7 +46,45 @@ public class InlineKeyboardButtonUtil {
         markup.setKeyboard(keyboard);
         return markup;
     }
+    public static InlineKeyboardMarkup getWagonButtons() {
+        List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
+        List<InlineKeyboardButton> row = new ArrayList<>();
+        List<InlineKeyboardButton> footer = new ArrayList<>();
+        List<Place> placeList = UserContainer.currentPlaceList;
+        InlineKeyboardButton button;
+        Database.readRegions();
+        for (int i = 0; i < placeList.size(); i++) {
+            button = new InlineKeyboardButton(String.valueOf(placeList.get(i).getNumber()));
+            button.setCallbackData(String.valueOf(placeList.get(i).getId()));
 
+            row.add(button);
+            if((i+1)%5==0){
+                keyboard.add(row);
+                row = new ArrayList<>();
+            }
+        }
+        keyboard.add(row);
+        button = new InlineKeyboardButton(InlineKeyboardButtonsConstants.PREV);
+        button.setCallbackData(InlineKeyboardButtonsConstants.PREV_CALL_BACK);
+        footer.add(button);
+        button = new InlineKeyboardButton(String.valueOf(UserContainer.currentWagonNumber));
+        button.setCallbackData(InlineKeyboardButtonsConstants.WAGON_INFO);
+        footer.add(button);
+        button = new InlineKeyboardButton(InlineKeyboardButtonsConstants.NEXT);
+        button.setCallbackData(InlineKeyboardButtonsConstants.NEXT_CALL_BACK);
+        footer.add(button);
+        keyboard.add(footer);
+
+        button = new InlineKeyboardButton(InlineKeyboardButtonsConstants.BUY_PLACE);
+        button.setCallbackData(InlineKeyboardButtonsConstants.BUY_PLACE_CALL_BACK);
+        keyboard.add(getRow(button));
+        button = new InlineKeyboardButton(InlineKeyboardButtonsConstants.BACK_TO_REYS);
+        button.setCallbackData(InlineKeyboardButtonsConstants.BACK_REYS_CALL_BACK);
+        keyboard.add(getRow(button));
+        InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
+        markup.setKeyboard(keyboard);
+        return markup;
+    }
     public static InlineKeyboardMarkup getAdminCanselOrConfirm() {
         InlineKeyboardButton confirm = new InlineKeyboardButton(InlineKeyboardButtonsConstants.CONFIRM_Admin);
         confirm.setCallbackData(InlineKeyboardButtonsConstants.CONFIRM_Admin_CALL_BACK);
@@ -141,5 +181,39 @@ public class InlineKeyboardButtonUtil {
         markup.setKeyboard(keyboard);
 
         return markup;
+    }
+
+    public static ReplyKeyboard getReysChoose() {
+        List<Reys> validReys = UserContainer.reysList;
+
+        List<InlineKeyboardButton> firstRow = new ArrayList<>();
+        List<InlineKeyboardButton> secondRow = new ArrayList<>();
+        InlineKeyboardButton button;
+        for (int i = 0; i < validReys.size(); i++) {
+            button = new InlineKeyboardButton(String.valueOf(i + 1));
+            button.setCallbackData(String.valueOf(validReys.get(i).getId()));
+            if (i <= validReys.size()/2) firstRow.add(button);
+            else secondRow.add(button);
+        }
+        return new InlineKeyboardMarkup(Arrays.asList(firstRow, secondRow));
+    }
+
+    public static ReplyKeyboard getGender() {
+        InlineKeyboardButton confirm = new InlineKeyboardButton("Erkak");
+        confirm.setCallbackData("erkak");
+        InlineKeyboardButton cancel = new InlineKeyboardButton("Ayol");
+        cancel.setCallbackData("ayol");
+        return new InlineKeyboardMarkup(List.of(
+                List.of(confirm, cancel)
+        ));
+    }
+
+    public static ReplyKeyboard getBUY() {
+        InlineKeyboardButton confirm = new InlineKeyboardButton(InlineKeyboardButtonsConstants.BUY_PLACE);
+        confirm.setCallbackData("_sotibOlaman");
+
+        return new InlineKeyboardMarkup(List.of(
+                List.of(confirm)
+        ));
     }
 }

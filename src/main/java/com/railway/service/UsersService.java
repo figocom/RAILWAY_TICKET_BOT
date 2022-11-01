@@ -6,6 +6,7 @@ import com.railway.db.Database;
 import com.railway.entity.Reys;
 import com.railway.entity.Station;
 import com.railway.entity.Users;
+import com.railway.entity.Wagon;
 import com.railway.enums.TrainType;
 import com.railway.util.ReplyKeyboardButtonConstants;
 
@@ -68,7 +69,7 @@ public class UsersService {
         UserContainer.dateList = listOfDates;
     }
 
-    public static List<Reys> getValidReysList(List<Reys> reysList) {
+    public static void getValidReysList(List<Reys> reysList) {
         List<Reys> reys = new ArrayList<>();
         double distance1;
         double distance2;
@@ -87,7 +88,7 @@ public class UsersService {
                 reys.add(reys1);
             }
         }
-        return reys;
+        UserContainer.reysList = reys;
     }
 
     public static LocalDateTime getDifTime(Station stationStart, Station stationEnd, TrainType type) {
@@ -152,5 +153,17 @@ public class UsersService {
         }else{
             return reysStartTime;
         }
+    }
+
+    public static String getWagonsByTrainId(Integer train_id) {
+        List<Wagon> wagonList = Database.getWagonListByTrainId(train_id);
+        String result = "";
+        for (Wagon wagon : wagonList) {
+            result += "    Vagon turi : ";
+            result += wagon.getType() + "\n";
+            result += "        Bo'sh joylar : " + Database.getCountFreePlacesByWagonId(wagon.getId()) + "\n";
+            result += "        Narx : " + wagon.getPrice()+"\n";
+        }
+        return result;
     }
 }

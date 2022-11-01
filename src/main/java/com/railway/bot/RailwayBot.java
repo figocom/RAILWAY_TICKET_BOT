@@ -11,6 +11,7 @@ import org.telegram.telegrambots.meta.api.methods.send.SendLocation;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageMedia;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
@@ -88,6 +89,8 @@ public class RailwayBot extends TelegramLongPollingBot {
                 execute((SendLocation) obj);
             }else if(obj instanceof AnswerCallbackQuery){
                 execute((AnswerCallbackQuery) obj);
+            }else if(obj instanceof EditMessageMedia){
+                execute((EditMessageMedia) obj);
             }
 
         } catch (TelegramApiException e) {
